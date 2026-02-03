@@ -16,13 +16,12 @@
         .container { max-width: 500px; margin: 0 auto; padding: 15px; padding-bottom: 100px; }
 
         /* Card System */
-        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.2s; }
+        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); transition: 0.2s; }
+        .card:active { transform: scale(0.99); }
+        
         .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
         .hidden { display: none; }
         
-        /* Typography */
-        .slot-subheader { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ios-purple); margin-bottom: 4px; display: block; }
-
         /* Inputs & Buttons */
         input, select { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
         input:focus { background: #e0e0e0; }
@@ -70,7 +69,7 @@
         /* List Items */
         .list-header { display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: white; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; }
         .slot-checkbox { width: 22px; height: 22px; accent-color: var(--ios-blue); cursor: pointer; }
-        .clinic-badge { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .clinic-badge { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; position:relative; top:-1px; }
         .color-row { display: flex; gap: 10px; margin: 10px 0; }
         .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-dot.selected { border-color: #333; transform: scale(1.1); }
@@ -235,7 +234,7 @@
     let slots = []; let locations = []; let presets = []; let selectedPerks = [];
     let displayDate = new Date(); let selectedDates = new Set(); let selectedItems = new Set();
     let currentUser = null; let userRole = 'dr'; let activeTab = 1; let newLocColor = '#007AFF';
-    let currentPresetName = '';
+    let activePresetName = '';
 
     // --- INIT & PERSISTENCE ---
     window.onload = () => {
@@ -316,6 +315,36 @@
         if(activeView === 'view-admin') renderMasterList();
     }
 
+    // --- ADMIN LOGIC ---
+    window.toggleDateSelection = (ds) => { selectedDates.has(ds)?selectedDates.delete(ds):selectedDates.add(ds); renderCalendars(); renderMasterList(); document.getElementById('selection-status').innerText = `${selectedDates.size} selected`; };
+    window.toggleRepeatUI = () => { document.getElementById('repeat-options').classList.toggle('hidden'); document.getElementById('repeat-switch').classList.toggle('checked'); };
+    window.selectWeekday = (idx) => { 
+        document.querySelectorAll('.wk-day')[idx].classList.toggle('active');
+        const year = displayDate.getFullYear(); const month = displayDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            if(new Date(year, month, d).getDay() === idx) {
+                if(document.querySelectorAll('.wk-day')[idx].classList.contains('active')) selectedDates.add(dateStr);
+                else selectedDates.delete(dateStr);
+            }
+        }
+        renderCalendars(); renderMasterList();
+    };
+
+    window.toggleSelectAllItems = (type) => {
+        const visibleItems = type === 'slots' ? (selectedDates.size > 0 ? slots.filter(s => selectedDates.has(s.date)) : slots) : locations;
+        const allSelected = visibleItems.length > 0 && visibleItems.every(i => selectedItems.has(i.id));
+        if(allSelected) visibleItems.forEach(i => selectedItems.delete(i.id));
+        else visibleItems.forEach(i => selectedItems.add(i.id));
+        if(type==='slots') renderMasterList(); else renderLocationList();
+        updateBulkUI();
+    };
+
+    window.toggleItemSelect = (id) => { selectedItems.has(id)?selectedItems.delete(id):selectedItems.add(id); updateBulkUI(); if(activeTab===1) renderMasterList(); else renderLocationList(); };
+    window.executeBulkAction = async () => { if(!confirm(`Delete ${selectedItems.size} items?`)) return; const b=writeBatch(db); const col=activeTab===1?'slots':'locations'; selectedItems.forEach(id=>b.delete(doc(db,col,id))); await b.commit(); clearSelection(); };
+    window.clearSelection = () => { selectedItems.clear(); renderMasterList(); renderLocationList(); updateBulkUI(); };
+    function updateBulkUI() { document.getElementById('bulk-bar').classList.toggle('hidden', selectedItems.size===0); document.getElementById('bulk-count').innerText = `${selectedItems.size} Selected`; }
+
     // --- DOCTOR LOGIC ---
     window.switchDrTab = (n) => {
         localStorage.setItem('activeDrTab', n);
@@ -330,7 +359,6 @@
         const list = document.getElementById('dr-slot-list'); list.innerHTML = '';
         const filterLoc = document.getElementById('dr-loc-filter').value;
         const selectedDate = selectedDates.values().next().value;
-        
         let filtered = slots.filter(s => s.status === 'available');
         if(selectedDate) filtered = filtered.filter(s => s.date === selectedDate);
         if(filterLoc !== 'All') filtered = filtered.filter(s => s.clinicName === filterLoc);
@@ -339,20 +367,23 @@
 
         filtered.forEach(s => {
             const locData = locations.find(l => l.name === s.clinicName) || {color: '#007AFF'};
-            const perksHTML = Array.isArray(s.perks) ? s.perks.map(p => `<span class="perk-pill">${p}</span>`).join('') : '';
+            const perksHTML = Array.isArray(s.perks) ? s.perks.map(p => `<span style="font-size:10px;background:#f2f2f7;color:#5856d6;padding:3px 6px;border-radius:4px;margin-right:4px;">${p}</span>`).join('') : '';
             
             list.innerHTML += `<div class="card">
-                ${s.presetName ? `<span class="slot-subheader">${s.presetName}</span>` : ''}
-                <div style="display:flex;justify-content:space-between;">
-                    <div style="display:flex;align-items:center;">
-                        <div class="clinic-badge" style="background:${locData.color}"></div>
-                        <b>${s.clinicName}</b>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <div style="font-size:16px; font-weight:700; margin-bottom:4px;">${s.title || 'Locum Shift'}</div>
+                        <div style="font-size:13px; color:#666; display:flex; align-items:center;">
+                            <div class="clinic-badge" style="background:${locData.color}"></div>${s.clinicName}
+                        </div>
+                        <div style="font-size:13px; color:#333; margin-top:6px; font-weight:500;">
+                            ${s.date} • ${s.startTime} (${s.duration}h)
+                        </div>
                     </div>
-                    <b style="color:var(--ios-green)">RM${s.payment}</b>
+                    <b style="color:var(--ios-green); font-size:15px;">RM${s.payment}</b>
                 </div>
-                <div style="font-size:13px;color:#555;margin:5px 0;">${s.date} • ${s.startTime} (${s.duration}h)</div>
-                <div style="margin-bottom:8px;">${perksHTML}</div>
-                <button class="btn btn-primary" style="margin:0;padding:10px;" onclick="bookSlot('${s.id}')">Book Slot</button>
+                <div style="margin-top:8px;">${perksHTML}</div>
+                <button class="btn btn-primary" style="margin-top:12px; padding:10px;" onclick="bookSlot('${s.id}')">Book Slot</button>
             </div>`;
         });
     };
@@ -364,22 +395,182 @@
     };
 
     window.renderMyShifts = () => {
-        const list = document.getElementById('dr-my-shifts'); 
-        list.innerHTML = '';
+        const list = document.getElementById('dr-my-shifts'); list.innerHTML = '';
         if (!currentUser) { const stored = localStorage.getItem('araUser'); if(stored) currentUser = JSON.parse(stored); else return; }
-
         const mySlots = slots.filter(s => s.bookedBy === currentUser.name);
-        if(mySlots.length === 0) { list.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">No shifts booked yet.</div>'; return; }
+        
+        if(mySlots.length === 0) list.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">No shifts booked.</div>';
 
         mySlots.forEach(s => {
+            const locData = locations.find(l => l.name === s.clinicName) || {color: '#007AFF'};
             const startISO = new Date(`${s.date}T${s.startTime}`).toISOString().replace(/-|:|\.\d\d\d/g,"");
             const endObj = new Date(`${s.date}T${s.startTime}`); endObj.setHours(endObj.getHours() + parseInt(s.duration));
             const endISO = endObj.toISOString().replace(/-|:|\.\d\d\d/g,"");
-            const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Locum at ${s.clinicName}&dates=${startISO}/${endISO}&details=${s.presetName||'Shift'}. Rate: RM${s.payment}`;
+            const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${s.title||'Locum'} at ${s.clinicName}&dates=${startISO}/${endISO}`;
             
             list.innerHTML += `<div class="card">
-                ${s.presetName ? `<span class="slot-subheader">${s.presetName}</span>` : ''}
-                <div style="display:flex;justify-content:space-between;"><b>${s.clinicName}</b><span class="status-booked">${s.attendance||'Booked'}</span></div>
-                <div style="margin:5px 0;font-size:13px;">${s.date} • ${s.startTime}</div>
-                <div style="text-align:right;font-weight:700;color:var(--ios-green)">RM${s.payment}</div>
-                <div class="cal-btn-row"><a href="${gCalUrl}" target="_blank" class="btn-cal">Add
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <div style="font-size:16px; font-weight:700;">${s.title || 'Locum Shift'}</div>
+                        <div style="font-size:13px; color:#666; margin-top:2px;">
+                            <div class="clinic-badge" style="background:${locData.color}"></div>${s.clinicName}
+                        </div>
+                    </div>
+                    <span class="status-booked">${s.attendance||'Booked'}</span>
+                </div>
+                <div style="margin:10px 0; font-size:13px; font-weight:500;">${s.date} • ${s.startTime} • <span style="color:var(--ios-green)">RM${s.payment}</span></div>
+                <div class="cal-btn-row">
+                    <a href="${gCalUrl}" target="_blank" class="btn-cal">Google Cal</a>
+                    <button class="btn-cal" onclick="downloadICS('${s.title||'Shift'}','${s.date}','${s.startTime}','${s.duration}')">Apple Cal</button>
+                </div>
+            </div>`;
+        });
+    };
+
+    // --- STAFF LOGIC (RESTORED) ---
+    window.renderStaffRoster = () => {
+        const list = document.getElementById('staff-roster-list'); list.innerHTML = '';
+        const filter = document.getElementById('staff-loc-select').value;
+        const selectedDate = selectedDates.values().next().value;
+        let filtered = slots.filter(s => s.status === 'booked');
+        if(filter !== 'All') filtered = filtered.filter(s => s.clinicName === filter);
+        if(selectedDate) filtered = filtered.filter(s => s.date === selectedDate);
+        if(filtered.length === 0) list.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">No doctors scheduled.</div>';
+        filtered.forEach(s => {
+            const isArrived = s.attendance === 'Arrived';
+            list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><b>Dr. ${s.bookedBy}</b><br><small>${s.clinicName} • ${s.startTime}</small></div>${!isArrived ? `<button class="btn-small btn-primary" onclick="checkInDr('${s.id}')">Check In</button>` : `<span class="status-arrived">Arrived</span>`}</div>`;
+        });
+    };
+    window.checkInDr = async (id) => { await updateDoc(doc(db, "slots", id), { attendance: 'Arrived' }); alert("Doctor Checked In"); };
+
+    // --- DATA SYNC ---
+    onSnapshot(collection(db, "locations"), (snap) => {
+        locations = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        ['adm-loc-dropdown', 'dr-loc-filter', 'staff-loc-select'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.innerHTML = id.includes('adm') ? '<option value="">Select Clinic</option>' : '<option value="All">All Locations</option>';
+                locations.forEach(l => el.innerHTML += `<option value="${l.name}">${l.name}</option>`);
+            }
+        });
+        if(activeTab === 2) renderLocationList();
+    });
+
+    onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
+        slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderCalendars(); 
+        if(activeTab === 1) renderMasterList();
+        if(currentUser) { renderDoctorSlots(); renderMyShifts(); }
+        if(document.getElementById('view-staff').classList.contains('hidden') === false) renderStaffRoster();
+    });
+
+    onSnapshot(collection(db, "shift_presets"), (snap) => {
+        presets = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        const ui = document.getElementById('preset-list-ui'); if(ui) ui.innerHTML = '';
+        presets.forEach(p => ui.innerHTML += `<div class="preset-pill" onclick="applyPreset('${p.id}')">⚡ ${p.name}</div>`);
+    });
+
+    onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+        const list = document.getElementById('verify-list'); if(list) list.innerHTML = '';
+        snap.forEach(d => {
+            const u = d.data(); list.innerHTML += `<div class="card">Dr. ${u.name}<br><small>MMC: ${u.mmc}</small><button class="btn btn-primary" style="margin-top:10px" onclick="verify('${d.id}')">Approve</button></div>`;
+        });
+    });
+
+    // --- UTILS ---
+    window.togglePerk = (el) => { el.classList.toggle('active'); const t=el.innerText; selectedPerks.includes(t)?selectedPerks=selectedPerks.filter(p=>p!==t):selectedPerks.push(t); };
+    window.calcTotal = () => { const r=document.getElementById('rate').value; const d=document.getElementById('duration').value; document.getElementById('total-display').innerText=`RM ${(r*d).toFixed(2)}`; };
+    window.pickColor = (el, c) => { document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected')); el.classList.add('selected'); newLocColor=c; };
+    window.addLocation = async () => { const n=document.getElementById('new-clinic').value; if(n) await addDoc(collection(db,"locations"), {name:n, color:newLocColor}); };
+    window.saveAsPreset = async () => { 
+        const n=prompt("Preset Name:"); 
+        if(n) { 
+            activePresetName = n; 
+            await addDoc(collection(db,"shift_presets"), {name:n,startTime:document.getElementById('start-time').value,duration:document.getElementById('duration').value,rate:document.getElementById('rate').value}); 
+        } 
+    };
+    window.applyPreset = (id) => { 
+        const p=presets.find(x=>x.id===id); 
+        if(p) {
+            document.getElementById('start-time').value=p.startTime; 
+            document.getElementById('duration').value=p.duration; 
+            document.getElementById('rate').value=p.rate; 
+            activePresetName = p.name;
+            window.calcTotal(); 
+        }
+    };
+    window.publishBatch = async () => {
+        if(selectedDates.size===0) return alert("Select dates!");
+        const loc=document.getElementById('adm-loc-dropdown').value; const r=document.getElementById('rate').value;
+        const d=document.getElementById('duration').value; const t=document.getElementById('start-time').value;
+        const cust=document.getElementById('custom-perks').value; let perks=[...selectedPerks]; if(cust) perks.push(cust);
+        const title = activePresetName || "Locum Shift";
+        const batch=writeBatch(db);
+        selectedDates.forEach(ds => {
+            const ref=doc(collection(db,"slots"));
+            batch.set(ref,{clinicName:loc,date:ds,title:title,startTime:t,duration:d,ratePerHour:r,payment:(r*d).toFixed(2),perks,status:'available'});
+        });
+        await batch.commit(); selectedDates.clear(); activePresetName=''; renderCalendars(); renderMasterList();
+    };
+    
+    // Renders
+    window.renderMasterList = function() {
+        const list = document.getElementById('adm-master-list'); list.innerHTML = '';
+        const header = document.getElementById('adm-master-list-header');
+        const visible = selectedDates.size > 0 ? slots.filter(s => selectedDates.has(s.date)) : slots;
+        const allSelected = visible.length > 0 && visible.every(s => selectedItems.has(s.id));
+        header.innerHTML = visible.length ? `<div class="list-header"><input type="checkbox" class="slot-checkbox" onclick="toggleSelectAllItems('slots')" ${allSelected?'checked':''}><span style="font-weight:600;font-size:13px;">Select All (${visible.length})</span></div>` : '';
+        visible.forEach(s => {
+            const ck = selectedItems.has(s.id)?'checked':'';
+            const locData = locations.find(l => l.name === s.clinicName) || {color: '#007AFF'};
+            list.innerHTML += `<div class="card" style="display:flex;gap:15px;align-items:center;">
+                <input type="checkbox" class="slot-checkbox" onchange="toggleItemSelect('${s.id}')" ${ck}>
+                <div style="flex:1">
+                    <div style="font-weight:700; font-size:15px;">${s.title || 'Locum Shift'}</div>
+                    <div style="font-size:12px; color:#666; margin-top:2px;">
+                        <div class="clinic-badge" style="background:${locData.color}"></div>${s.clinicName}
+                    </div>
+                    <div style="font-size:12px; margin-top:4px;">${s.date} • ${s.startTime}</div>
+                </div>
+                <b style="font-size:12px;color:${s.status==='booked'?'red':'green'}">${s.status.toUpperCase()}</b>
+            </div>`;
+        });
+    }
+    
+    window.renderLocationList = function() {
+        const ui = document.getElementById('loc-list'); ui.innerHTML = '';
+        const allSelected = locations.length > 0 && locations.every(l => selectedItems.has(l.id));
+        document.getElementById('loc-list-header').innerHTML = locations.length ? `<div class="list-header"><input type="checkbox" class="slot-checkbox" onclick="toggleSelectAllItems('locs')" ${allSelected?'checked':''}><span style="font-weight:600;font-size:13px;">Select All (${locations.length})</span></div>` : '';
+        locations.forEach(l => {
+            const ck = selectedItems.has(l.id)?'checked':'';
+            ui.innerHTML += `<div class="card" style="display:flex;align-items:center;gap:15px;padding:15px;"><input type="checkbox" class="slot-checkbox" onchange="toggleItemSelect('${l.id}')" ${ck}><div class="clinic-badge" style="background:${l.color||'#007AFF'}"></div><b>${l.name}</b></div>`;
+        });
+    }
+
+    // Renaming & Verify
+    window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
+    window.downloadICS = (summary, date, time, dur) => {
+        const start = new Date(`${date}T${time}`);
+        const end = new Date(start.getTime() + dur * 60 * 60 * 1000);
+        const fmt = d => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+        const blob = new Blob([`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${summary}\nDTSTART:${fmt(start)}\nDTEND:${fmt(end)}\nEND:VEVENT\nEND:VCALENDAR`], { type: 'text/calendar' });
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'shift.ics'; link.click();
+    };
+
+    // View Routing
+    window.showView = (v, bypass=false) => {
+        if(v==='admin' && !bypass) { if(prompt("Pass?")!=='admin123') return; localStorage.setItem('araAdmin', 'true'); }
+        document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('view-'+v).classList.remove('hidden');
+        renderCalendars();
+    };
+    
+    window.switchAdminTab = (n) => {
+        activeTab = n; localStorage.setItem('activeAdminTab', n);
+        [1,2,3].forEach(i => { document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n); document.getElementById('tab-btn-'+i).className = i===n?'active':''; });
+        if(n===2) renderLocationList(); if(n===1) renderMasterList(); clearSelection();
+    };
+
+</script>
+</body>
+</html>
