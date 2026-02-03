@@ -3,126 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AraLocum | Admin HQ</title>
+    <title>AraLocum Pro</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f; --light: #ecf0f1; }
-        body { font-family: 'Inter', system-ui, sans-serif; margin: 0; background: #f4f7f6; color: #333; }
-        
-        /* Navigation */
-        .nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .admin-nav { display: flex; background: white; padding: 10px; gap: 10px; overflow-x: auto; border-bottom: 1px solid #ddd; sticky; top: 0; z-index: 100; }
-        
-        /* Layout */
-        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
-        .admin-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        /* Components */
-        .btn { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
-        .btn-nav { background: var(--light); color: var(--primary); }
-        .btn-nav.active { background: var(--accent); color: white; }
-        .btn-primary { background: var(--accent); color: white; width: 100%; }
-        .btn-danger { background: var(--danger); color: white; }
-        
-        .card { background: white; padding: 20px; border-radius: 12px; border-top: 4px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #fafafa; color: #7f8c8d; font-size: 12px; text-transform: uppercase; }
-        
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .status-available { background: #e8f5e9; color: #2e7d32; }
-        .status-booked { background: #fff3e0; color: #ef6c00; }
-        
+        :root {
+            --ios-bg: #F2F2F7;
+            --ios-card: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-orange: #FF9500;
+            --ios-red: #FF3B30;
+            --ios-text: #000000;
+            --ios-label: #8E8E93;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; background-color: var(--ios-bg); color: var(--ios-text); 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Glassmorphism Header */
+        .nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 1000;
+            padding: 15px 20px; border-bottom: 0.5px solid rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .nav h2 { font-weight: 700; font-size: 20px; letter-spacing: -0.5px; margin: 0; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+        /* Apple Card Style */
+        .card {
+            background: var(--ios-card);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: transform 0.2s ease;
+        }
+
+        .card:active { transform: scale(0.98); }
+
+        /* Typography */
+        h3 { font-weight: 700; font-size: 24px; letter-spacing: -0.5px; margin-bottom: 15px; }
+        .label { font-size: 13px; color: var(--ios-label); font-weight: 500; margin-bottom: 4px; display: block; }
+
+        /* Inputs */
+        input, select {
+            width: 100%; padding: 14px; margin: 8px 0;
+            border: none; border-radius: 12px;
+            background: #E9E9EB; font-size: 16px; box-sizing: border-box;
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none; border-radius: 12px; padding: 14px 20px;
+            font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+
+        .btn-primary { background: var(--ios-blue); color: white; width: 100%; }
+        .btn-ghost { background: transparent; color: var(--ios-blue); font-size: 14px; }
+        .btn-nav { background: #E9E9EB; color: var(--ios-text); margin-right: 5px; padding: 8px 16px; font-size: 13px; border-radius: 10px; }
+        .btn-nav.active { background: var(--ios-blue); color: white; }
+
+        /* Badges */
+        .badge {
+            padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            display: inline-block; margin-top: 5px;
+        }
+        .bg-paid { background: #E1F5E8; color: var(--ios-green); }
+        .bg-pending { background: #FFF4E5; color: var(--ios-orange); }
+
         .hidden { display: none; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+
+        /* Tab Bar Animation */
+        .tab-menu {
+            display: flex; background: #E9E9EB; padding: 4px; border-radius: 14px; margin-bottom: 20px;
+        }
+        .tab-menu button {
+            flex: 1; border: none; padding: 8px; border-radius: 10px; cursor: pointer;
+            background: transparent; font-weight: 600; font-size: 13px;
+        }
+        .tab-menu button.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
     <div class="nav">
-        <h2 style="margin:0">🏥 AraLocum</h2>
-        <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="location.reload()">Exit / Logout</button>
-    </div>
-
-    <div id="admin-menu" class="admin-nav hidden">
-        <button class="btn btn-nav active" onclick="switchTab('tab-slots')">📅 Slot Manager</button>
-        <button class="btn btn-nav" onclick="switchTab('tab-bookings')">🤝 Booking Apps</button>
-        <button class="btn btn-nav" onclick="switchTab('tab-profiles')">👤 Profile Apps</button>
-        <button class="btn btn-nav" onclick="switchTab('tab-settings')">⚙️ Settings</button>
+        <h2>AraLocum</h2>
+        <button class="btn btn-ghost" onclick="location.reload()">Logout</button>
     </div>
 
     <div class="container">
-        
-        <div id="view-auth" class="admin-section" style="max-width: 500px; margin: 50px auto; text-align:center;">
-            <h2>Doctor Access</h2>
-            <input type="text" id="loginPhone" placeholder="Enter WhatsApp Phone Number">
-            <button class="btn btn-primary" onclick="loginDoctor()">Login to Book</button>
-            <p style="margin: 20px 0; color: #999;">— OR —</p>
-            <button class="btn btn-nav" onclick="showRegistration()">Create New Profile</button>
-            <br><br>
-            <small onclick="showView('admin')" style="cursor:pointer; color: #ccc;">Admin Access</small>
+        <div id="view-auth">
+            <h3 style="text-align:center; margin-top: 40px;">Doctor Portal</h3>
+            <div class="card" style="text-align:center;">
+                <input type="text" id="loginPhone" placeholder="Mobile Number">
+                <button class="btn btn-primary" onclick="loginDoctor()">Sign In</button>
+                <button class="btn btn-ghost" style="margin-top:15px;" onclick="showRegistration()">New Doctor? Register</button>
+            </div>
+            <p style="text-align:center; font-size:12px; color:var(--ios-label);" onclick="showView('admin')">Admin Console</p>
         </div>
 
-        <div id="view-register" class="admin-section hidden">
-            <h3>New Doctor Registration</h3>
-            <input type="text" id="regName" placeholder="Full Name (as per IC)">
-            <input type="text" id="regMMC" placeholder="MMC Number">
-            <input type="text" id="regAPC" placeholder="APC Number">
-            <input type="text" id="regPhone" placeholder="WhatsApp Number">
-            <button class="btn btn-primary" onclick="registerDoctor()">Submit Profile Application</button>
+        <div id="view-register" class="hidden">
+            <h3>Profile Application</h3>
+            <div class="card">
+                <span class="label">Full Name</span>
+                <input type="text" id="regName" placeholder="Dr. Name">
+                <span class="label">Credentials</span>
+                <input type="text" id="regPhone" placeholder="WhatsApp Number">
+                <input type="text" id="regMMC" placeholder="MMC No.">
+                <button class="btn btn-primary" onclick="registerDoctor()">Submit Profile</button>
+            </div>
         </div>
 
         <div id="view-doctor" class="hidden">
-            <h3 id="dr-welcome">Available Shifts</h3>
-            <div id="doctor-slot-list" class="grid"></div>
+            <div class="tab-menu">
+                <button id="btn-dr-slots" class="active" onclick="switchDrTab('dr-slots')">Find Slots</button>
+                <button id="btn-dr-profile" onclick="switchDrTab('dr-profile')">My Earnings</button>
+            </div>
+
+            <div id="dr-slots">
+                <div id="doctor-available-list"></div>
+            </div>
+
+            <div id="dr-profile" class="hidden">
+                <div class="card">
+                    <table id="dr-history-table">
+                        <tbody id="dr-history-list"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div id="view-admin" class="hidden">
-            
-            <div id="tab-slots" class="admin-section">
-                <h3>Create New Slot</h3>
-                <div style="display:flex; gap:10px">
+            <div class="tab-menu" style="overflow-x:auto;">
+                <button id="btn-tab-slots" class="active" onclick="switchAdminTab('tab-slots')">Manager</button>
+                <button id="btn-tab-bookings" onclick="switchAdminTab('tab-bookings')">Payments</button>
+                <button id="btn-tab-profiles" onclick="switchAdminTab('tab-profiles')">Verification</button>
+            </div>
+
+            <div id="tab-slots">
+                <div class="card">
+                    <span class="label">New Shift Details</span>
                     <input type="text" id="newClinic" placeholder="Clinic Name">
                     <input type="date" id="newDate">
+                    <input type="number" id="newPay" placeholder="Payment RM">
+                    <button class="btn btn-primary" onclick="addSlot()">Publish Shift</button>
                 </div>
-                <select id="newType">
-                    <option>Long Marathon (8AM-8PM)</option>
-                    <option>Long Marathon (8PM-8AM)</option>
-                    <option>Fun Run (6PM-10PM)</option>
-                </select>
-                <button class="btn btn-primary" style="background:var(--primary)" onclick="addSlot()">Publish Slot</button>
-                <hr>
-                <h3>All Published Slots</h3>
-                <table id="master-slots">
-                    <thead><tr><th>Clinic/Date</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="admin-master-list"></tbody>
-                </table>
+                <div id="admin-master-slots"></div>
             </div>
 
-            <div id="tab-bookings" class="admin-section hidden">
-                <h3>Active Booking Applications</h3>
-                <p>List of doctors currently assigned to slots.</p>
-                <table>
-                    <thead><tr><th>Clinic/Date</th><th>Assigned Doctor</th><th>Phone</th><th>Action</th></tr></thead>
-                    <tbody id="admin-booking-list"></tbody>
-                </table>
+            <div id="tab-bookings" class="hidden">
+                <div class="card">
+                    <table style="font-size:13px;">
+                        <tbody id="admin-payment-list"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div id="tab-profiles" class="admin-section hidden">
-                <h3>Pending Profile Verifications</h3>
-                <table>
-                    <thead><tr><th>Doctor Name</th><th>MMC/APC</th><th>Phone</th><th>Action</th></tr></thead>
-                    <tbody id="admin-profile-list"></tbody>
-                </table>
+            <div id="tab-profiles" class="hidden">
+                <div id="admin-pending-users"></div>
             </div>
-
-            <div id="tab-settings" class="admin-section hidden">
-                <h3>System Settings</h3>
-                <p>Admin Password: <b>admin123</b></p>
-                <button class="btn btn-danger" onclick="alert('Database backup coming soon!')">Backup Data</button>
-            </div>
-
         </div>
     </div>
 
@@ -130,136 +180,97 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, query, where, getDocs, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w",
-            authDomain: "aralocum.firebaseapp.com",
-            projectId: "aralocum",
-            storageBucket: "aralocum.firebasestorage.app",
-            messagingSenderId: "665619614983",
-            appId: "1:665619614983:web:e3b4b50524c2730cf609a2"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const firebaseConfig = { apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w", authDomain: "aralocum.firebaseapp.com", projectId: "aralocum", storageBucket: "aralocum.firebasestorage.app", messagingSenderId: "665619614983", appId: "1:665619614983:web:e3b4b50524c2730cf609a2" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
         let currentDr = null;
 
-        // AUTH LOGIC
         window.loginDoctor = async () => {
-            const phone = document.getElementById('loginPhone').value;
-            const q = query(collection(db, "users"), where("phone", "==", phone));
+            const p = document.getElementById('loginPhone').value;
+            const q = query(collection(db, "users"), where("phone", "==", p));
             const snap = await getDocs(q);
-            if(snap.empty) return alert("Phone not found. Please register.");
+            if(snap.empty) return alert("Phone not registered.");
             const user = snap.docs[0].data();
-            if(user.status !== 'verified') return alert("Profile pending verification.");
+            if(user.status !== 'verified') return alert("Admin is still verifying your MMC/APC.");
             currentDr = user;
-            document.getElementById('dr-welcome').innerText = "Welcome Dr. " + user.name;
             showView('doctor');
         };
 
         window.registerDoctor = async () => {
-            await addDoc(collection(db, "users"), {
-                name: document.getElementById('regName').value,
-                mmc: document.getElementById('regMMC').value,
-                apc: document.getElementById('regAPC').value,
-                phone: document.getElementById('regPhone').value,
-                status: 'pending'
-            });
-            alert("Application Sent!");
-            location.reload();
+            await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, mmc: document.getElementById('regMMC').value, status: 'pending' });
+            alert("Application Submitted!"); location.reload();
         };
 
-        // ADMIN LOGIC
         window.addSlot = async () => {
-            await addDoc(collection(db, "slots"), {
-                clinicName: document.getElementById('newClinic').value,
-                date: document.getElementById('newDate').value,
-                slotType: document.getElementById('newType').value,
-                status: 'available'
-            });
-            alert("Slot Published");
+            await addDoc(collection(db, "slots"), { clinicName: document.getElementById('newClinic').value, date: document.getElementById('newDate').value, payment: document.getElementById('newPay').value, status: 'available' });
+            alert("Shift Published!");
         };
 
-        // REAL-TIME UPDATES
         onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
-            const masterList = document.getElementById('admin-master-list');
-            const bookingList = document.getElementById('admin-booking-list');
-            const drList = document.getElementById('doctor-slot-list');
-            
-            masterList.innerHTML = ''; bookingList.innerHTML = ''; drList.innerHTML = '';
+            const drAvail = document.getElementById('doctor-available-list');
+            const drHist = document.getElementById('dr-history-list');
+            const admPay = document.getElementById('admin-payment-list');
+            const admMaster = document.getElementById('admin-master-slots');
+
+            drAvail.innerHTML = ''; drHist.innerHTML = ''; admPay.innerHTML = ''; admMaster.innerHTML = '';
 
             snap.forEach(d => {
-                const s = d.data();
-                // Admin Master List
-                masterList.innerHTML += `<tr>
-                    <td>${s.clinicName}<br><small>${s.date}</small></td>
-                    <td>${s.slotType}</td>
-                    <td><span class="status-badge status-${s.status}">${s.status}</span></td>
-                    <td><button class="btn-danger" style="padding:4px 8px" onclick="deleteSlot('${d.id}')">Delete</button></td>
-                </tr>`;
+                const s = d.data(); const id = d.id;
 
-                // Admin Booking List
-                if(s.status === 'booked') {
-                    bookingList.innerHTML += `<tr>
-                        <td>${s.clinicName}<br>${s.date}</td>
-                        <td>Dr. ${s.bookedBy}</td>
-                        <td>${s.drPhone}</td>
-                        <td><button class="btn btn-danger" style="padding:4px 8px" onclick="releaseSlot('${d.id}')">Cancel Booking</button></td>
-                    </tr>`;
+                if(currentDr && s.bookedBy === currentDr.name) {
+                    drHist.innerHTML += `<tr><td><b>${s.clinicName}</b><br><small style="color:var(--ios-label)">${s.date}</small></td><td style="text-align:right">RM${s.payment}<br><span class="badge ${s.payStatus==='Paid'?'bg-paid':'bg-pending'}">${s.payStatus || 'Processing'}</span></td></tr>`;
                 }
 
-                // Doctor View
                 if(s.status === 'available') {
-                    drList.innerHTML += `<div class="card">
-                        <b>${s.clinicName}</b><br>📅 ${s.date}<br><small>${s.slotType}</small>
-                        <button class="btn btn-primary" style="margin-top:10px" onclick="bookSlot('${d.id}')">Claim Shift</button>
-                    </div>`;
+                    drAvail.innerHTML += `<div class="card"><b>${s.clinicName}</b><br><small style="color:var(--ios-label)">${s.date}</small><div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;"><span>RM${s.payment}</span><button class="btn btn-primary" style="width:auto; padding:8px 20px;" onclick="bookSlot('${id}')">Claim</button></div></div>`;
                 }
+
+                if(s.status === 'booked') {
+                    admPay.innerHTML += `<tr><td>Dr. ${s.bookedBy}<br><small>${s.clinicName} (${s.date})</small></td><td style="text-align:right">RM${s.payment}<br><button class="btn-ghost" onclick="markPaid('${id}')">${s.payStatus==='Paid'?'✓ Paid':'Mark Paid'}</button></td></tr>`;
+                }
+
+                admMaster.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><b>${s.clinicName}</b><span style="font-size:12px; color:var(--ios-label)">${s.status}</span></div><small>${s.date}</small><br><button onclick="deleteSlot('${id}')" style="color:var(--ios-red); background:none; border:none; margin-top:10px; font-size:12px; padding:0; cursor:pointer;">Remove Shift</button></div>`;
             });
         });
 
         onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
-            const list = document.getElementById('admin-profile-list');
+            const list = document.getElementById('admin-pending-users');
             list.innerHTML = '';
             snap.forEach(d => {
                 const u = d.data();
-                list.innerHTML += `<tr>
-                    <td>${u.name}</td>
-                    <td>MMC: ${u.mmc}<br>APC: ${u.apc}</td>
-                    <td>${u.phone}</td>
-                    <td><button class="btn-verify" style="background:var(--success); color:white; border:none; padding:5px; border-radius:4px" onclick="verifyDr('${d.id}')">Approve</button></td>
-                </tr>`;
+                list.innerHTML += `<div class="card"><b>Dr. ${u.name}</b><br><small>MMC: ${u.mmc}</small><br><button class="btn btn-primary" style="margin-top:10px;" onclick="verifyDr('${d.id}')">Approve Profile</button></div>`;
             });
         });
 
-        // ACTIONS
-        window.bookSlot = async (id) => {
-            await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: currentDr.name, drPhone: currentDr.phone });
-            alert("Success!");
-        };
+        window.bookSlot = async (id) => { await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: currentDr.name, payStatus: 'Processing' }); alert("Booked!"); };
+        window.markPaid = async (id) => { await updateDoc(doc(db, "slots", id), { payStatus: 'Paid' }); };
         window.verifyDr = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
-        window.deleteSlot = async (id) => { if(confirm("Delete slot?")) await deleteDoc(doc(db, "slots", id)); };
-        window.releaseSlot = async (id) => { if(confirm("Cancel this booking?")) await updateDoc(doc(db, "slots", id), { status: 'available', bookedBy: null }); };
+        window.deleteSlot = async (id) => { if(confirm("Remove this shift?")) await deleteDoc(doc(db, "slots", id)); };
 
-        // NAVIGATION
         window.showView = (v) => {
-            if(v === 'admin' && prompt("Pass?") !== 'admin123') return;
+            if(v === 'admin' && prompt("Admin Code?") !== 'admin123') return;
             document.getElementById('view-auth').classList.add('hidden');
             document.getElementById('view-register').classList.add('hidden');
             document.getElementById('view-doctor').classList.toggle('hidden', v !== 'doctor');
             document.getElementById('view-admin').classList.toggle('hidden', v !== 'admin');
-            document.getElementById('admin-menu').classList.toggle('hidden', v !== 'admin');
         };
 
-        window.showRegistration = () => {
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('view-register').classList.remove('hidden');
+        window.showRegistration = () => { document.getElementById('view-auth').classList.add('hidden'); document.getElementById('view-register').classList.remove('hidden'); };
+        
+        window.switchAdminTab = (t) => {
+            document.querySelectorAll('#view-admin .tab-menu button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + t).classList.add('active');
+            document.getElementById('tab-slots').classList.add('hidden');
+            document.getElementById('tab-bookings').classList.add('hidden');
+            document.getElementById('tab-profiles').classList.add('hidden');
+            document.getElementById(t).classList.remove('hidden');
         };
 
-        window.switchTab = (tabId) => {
-            document.querySelectorAll('.admin-section').forEach(s => { if(s.id.startsWith('tab-')) s.classList.add('hidden'); });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        window.switchDrTab = (t) => {
+            document.querySelectorAll('#view-doctor .tab-menu button').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + t).classList.add('active');
+            document.getElementById('dr-slots').classList.add('hidden');
+            document.getElementById('dr-profile').classList.add('hidden');
+            document.getElementById(t).classList.remove('hidden');
         };
     </script>
 </body>
