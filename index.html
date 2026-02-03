@@ -27,18 +27,24 @@
         /* Buttons */
         .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; margin-top: 10px; }
         .btn-primary { background: var(--ios-blue); color: white; }
-        .btn-secondary { background: #E9E9EB; color: var(--ios-blue); font-size: 14px; margin-top: 5px; padding: 12px; }
+        .btn-secondary { background: #E9E9EB; color: var(--ios-blue); font-size: 14px; margin-top: 8px; padding: 12px; }
         
-        /* PRESET CHIPS (NEW) */
-        .preset-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
-        .preset-chip { 
-            background: linear-gradient(135deg, #007AFF, #005ecb); color: white; 
-            padding: 8px 14px; border-radius: 18px; font-size: 12px; font-weight: 600; 
+        /* PRESET PILLS (NEW) */
+        .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+        .preset-container::-webkit-scrollbar { display: none; }
+        
+        .preset-pill { 
+            background: white; border: 1px solid var(--ios-blue); color: var(--ios-blue);
+            padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; 
             white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 2px 4px rgba(0,122,255,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;
         }
-        .preset-chip .del-btn { background: rgba(0,0,0,0.2); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-        .preset-chip:active { transform: scale(0.96); }
+        .preset-pill:active { transform: scale(0.95); background: var(--ios-blue); color: white; }
+        .preset-pill .del-btn { 
+            width: 16px; height: 16px; background: rgba(0,0,0,0.1); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-size: 9px; margin-left: 5px;
+        }
+        .preset-pill .del-btn:hover { background: var(--ios-red); color: white; }
 
         /* Perks */
         .perks-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
@@ -52,6 +58,7 @@
         .date-cell.selected .num { background: var(--ios-blue); color: white; }
         .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 3px; }
 
+        /* Tabs */
         .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
         .tab-menu button { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -81,11 +88,11 @@
                 <div style="text-align:center; font-size:13px; color:var(--ios-blue); margin-bottom:15px; font-weight:600" id="day-display">Select a date</div>
                 <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
 
-                <span class="label">2. Quick Fill (Presets)</span>
-                <div class="preset-scroll" id="preset-list-ui">
+                <span class="label">2. Quick Presets (Tap to Fill)</span>
+                <div class="preset-container" id="preset-list-ui">
                     </div>
 
-                <span class="label">3. Shift Details</span>
+                <span class="label">3. Customize Details</span>
                 <select id="adm-loc-dropdown"></select>
                 
                 <div class="row">
@@ -111,8 +118,8 @@
                 </div>
                 <input type="text" id="custom-perks" placeholder="+ Add other perks">
 
+                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save Current as New Preset</button>
                 <button class="btn btn-primary" onclick="publishSlot()">Publish Slot</button>
-                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save Config as New Preset</button>
             </div>
 
             <div id="adm-master-list"></div>
@@ -162,33 +169,38 @@
     function renderPresets() {
         const ui = document.getElementById('preset-list-ui');
         ui.innerHTML = '';
-        if(presets.length === 0) ui.innerHTML = '<span style="font-size:12px; color:#999; padding:5px;">No presets saved. Fill form & click Save below.</span>';
+        if(presets.length === 0) ui.innerHTML = '<span style="font-size:12px; color:#999; padding:5px;">No saved presets.</span>';
         
         presets.forEach(p => {
-            const chip = document.createElement('div');
-            chip.className = 'preset-chip';
-            chip.innerHTML = `${p.name} <span class="del-btn" onclick="deletePreset('${p.id}', event)">✕</span>`;
-            chip.onclick = (e) => { 
-                if(e.target.className === 'del-btn') return; // Don't trigger fill if deleting
+            const pill = document.createElement('div');
+            pill.className = 'preset-pill';
+            pill.innerHTML = `⚡ ${p.name} <div class="del-btn" onclick="deletePreset('${p.id}', event)">✕</div>`;
+            pill.onclick = (e) => { 
+                if(e.target.className === 'del-btn') return; 
                 applyPreset(p); 
             };
-            ui.appendChild(chip);
+            ui.appendChild(pill);
         });
     }
 
     window.saveAsPreset = async () => {
-        const name = prompt("Name this shift preset (e.g. Marathon Day):");
+        const name = prompt("Name this preset (e.g. Marathon Shift):");
         if(!name) return;
+        
+        // Combine pills and custom text
+        let finalPerks = [...selectedPerks];
+        const custom = document.getElementById('custom-perks').value;
+        if(custom) finalPerks.push(custom);
         
         const data = {
             name: name,
             startTime: document.getElementById('start-time').value,
             duration: document.getElementById('duration').value,
             rate: document.getElementById('rate').value,
-            perks: [...selectedPerks] // Save currently selected perks
+            perks: finalPerks
         };
 
-        if(!data.startTime || !data.duration || !data.rate) return alert("Fill form details first!");
+        if(!data.startTime || !data.duration || !data.rate) return alert("Please fill the form details first, then click Save.");
 
         await addDoc(collection(db, "shift_presets"), data);
         alert("Preset Saved!");
@@ -204,13 +216,22 @@
         document.getElementById('duration').value = p.duration;
         document.getElementById('rate').value = p.rate;
         
-        // Reset Perks
+        // Reset and Apply Perks
         selectedPerks = p.perks || [];
         document.querySelectorAll('.perk-pill').forEach(el => {
             el.classList.toggle('active', selectedPerks.includes(el.innerText));
         });
+        
+        // Handle custom perks that aren't pills
+        const pillTexts = Array.from(document.querySelectorAll('.perk-pill')).map(el => el.innerText);
+        const custom = selectedPerks.filter(txt => !pillTexts.includes(txt));
+        document.getElementById('custom-perks').value = custom.join(', ');
 
-        calcTotal(); // Recalculate money
+        calcTotal();
+        // Visual feedback
+        const totalBox = document.querySelector('.total-box');
+        totalBox.style.backgroundColor = "#c8e6c9";
+        setTimeout(() => totalBox.style.backgroundColor = "#E1F5E8", 300);
     }
 
     // --- EXISTING LOGIC ---
@@ -236,8 +257,9 @@
         const r = document.getElementById('rate').value;
         const d = document.getElementById('duration').value;
         const custom = document.getElementById('custom-perks').value;
+        
         let finalPerks = [...selectedPerks];
-        if(custom) finalPerks.push(custom);
+        if(custom && !finalPerks.includes(custom)) finalPerks.push(custom);
 
         if(!loc || !selectedDate || !r || !d) return alert("Fill required fields");
 
@@ -306,6 +328,7 @@
     window.delSlot = async (id) => { if(confirm("Delete Slot?")) await deleteDoc(doc(db, "slots", id)); };
     window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
     window.switchAdminTab = (n) => { [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n)); document.querySelectorAll('#admin-tabs button').forEach((b,i) => b.classList.toggle('active', i+1===n)); };
+
 </script>
 </body>
 </html>
