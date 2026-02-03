@@ -29,8 +29,8 @@
         .btn-primary { background: var(--ios-blue); color: white; }
         .btn-secondary { background: #E9E9EB; color: var(--ios-blue); font-size: 14px; margin-top: 8px; padding: 12px; }
         
-        /* PRESET PILLS (NEW) */
-        .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+        /* PRESET PILLS (FIXED) */
+        .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; min-height: 40px; align-items: center; }
         .preset-container::-webkit-scrollbar { display: none; }
         
         .preset-pill { 
@@ -41,8 +41,8 @@
         }
         .preset-pill:active { transform: scale(0.95); background: var(--ios-blue); color: white; }
         .preset-pill .del-btn { 
-            width: 16px; height: 16px; background: rgba(0,0,0,0.1); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; font-size: 9px; margin-left: 5px;
+            width: 20px; height: 20px; background: rgba(0,0,0,0.05); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-size: 10px; margin-left: 5px;
         }
         .preset-pill .del-btn:hover { background: var(--ios-red); color: white; }
 
@@ -90,7 +90,8 @@
 
                 <span class="label">2. Quick Presets (Tap to Fill)</span>
                 <div class="preset-container" id="preset-list-ui">
-                    </div>
+                    <span style="font-size:12px; color:#999; padding:5px;">Loading Presets...</span>
+                </div>
 
                 <span class="label">3. Customize Details</span>
                 <select id="adm-loc-dropdown"></select>
@@ -118,7 +119,7 @@
                 </div>
                 <input type="text" id="custom-perks" placeholder="+ Add other perks">
 
-                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save Current as New Preset</button>
+                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save as New Preset</button>
                 <button class="btn btn-primary" onclick="publishSlot()">Publish Slot</button>
             </div>
 
@@ -160,25 +161,35 @@
     let selectedDate = null;
     let selectedPerks = [];
 
-    // --- PRESET LOGIC (NEW) ---
+    // --- PRESET LOGIC (FIXED) ---
     onSnapshot(collection(db, "shift_presets"), (snap) => {
         presets = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderPresets();
+    }, (error) => {
+        console.error("Error fetching presets: ", error);
+        document.getElementById('preset-list-ui').innerHTML = '<span style="color:red; font-size:12px">Error: Update Firestore Rules to enable presets.</span>';
     });
 
     function renderPresets() {
         const ui = document.getElementById('preset-list-ui');
         ui.innerHTML = '';
-        if(presets.length === 0) ui.innerHTML = '<span style="font-size:12px; color:#999; padding:5px;">No saved presets.</span>';
+        
+        if(presets.length === 0) {
+            ui.innerHTML = '<span style="font-size:12px; color:#999; padding:5px;">No presets yet. Save one below!</span>';
+            return;
+        }
         
         presets.forEach(p => {
             const pill = document.createElement('div');
             pill.className = 'preset-pill';
-            pill.innerHTML = `⚡ ${p.name} <div class="del-btn" onclick="deletePreset('${p.id}', event)">✕</div>`;
+            // Clickable Area
             pill.onclick = (e) => { 
-                if(e.target.className === 'del-btn') return; 
+                if(e.target.classList.contains('del-btn')) return; 
                 applyPreset(p); 
             };
+            
+            // Content
+            pill.innerHTML = `⚡ ${p.name} <div class="del-btn" onclick="deletePreset('${p.id}', event)">✕</div>`;
             ui.appendChild(pill);
         });
     }
@@ -190,7 +201,7 @@
         // Combine pills and custom text
         let finalPerks = [...selectedPerks];
         const custom = document.getElementById('custom-perks').value;
-        if(custom) finalPerks.push(custom);
+        if(custom && !finalPerks.includes(custom)) finalPerks.push(custom);
         
         const data = {
             name: name,
@@ -202,12 +213,16 @@
 
         if(!data.startTime || !data.duration || !data.rate) return alert("Please fill the form details first, then click Save.");
 
-        await addDoc(collection(db, "shift_presets"), data);
-        alert("Preset Saved!");
+        try {
+            await addDoc(collection(db, "shift_presets"), data);
+            alert("Preset Saved!");
+        } catch(e) {
+            alert("Error saving: Check Firestore Rules.");
+        }
     };
 
     window.deletePreset = async (id, e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // Stop the pill from clicking
         if(confirm("Delete this preset?")) await deleteDoc(doc(db, "shift_presets", id));
     };
 
@@ -222,16 +237,12 @@
             el.classList.toggle('active', selectedPerks.includes(el.innerText));
         });
         
-        // Handle custom perks that aren't pills
+        // Handle custom perks
         const pillTexts = Array.from(document.querySelectorAll('.perk-pill')).map(el => el.innerText);
         const custom = selectedPerks.filter(txt => !pillTexts.includes(txt));
         document.getElementById('custom-perks').value = custom.join(', ');
 
         calcTotal();
-        // Visual feedback
-        const totalBox = document.querySelector('.total-box');
-        totalBox.style.backgroundColor = "#c8e6c9";
-        setTimeout(() => totalBox.style.backgroundColor = "#E1F5E8", 300);
     }
 
     // --- EXISTING LOGIC ---
