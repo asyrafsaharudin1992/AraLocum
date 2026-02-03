@@ -55,7 +55,7 @@
         .wk-day { width: 35px; height: 35px; border-radius: 50%; background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; color: #555; transition: 0.2s; }
         .wk-day.active { background: var(--ios-blue); color: white; border-color: var(--ios-blue); }
 
-        /* Pills & List */
+        /* Pills & Lists */
         .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
         .preset-pill { background: white; border: 1px solid var(--ios-blue); color: var(--ios-blue); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .perks-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
@@ -66,12 +66,9 @@
         .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
         .tab-menu button { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        
-        /* Select All & Checkbox */
-        .list-header { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; }
         .slot-checkbox { width: 22px; height: 22px; accent-color: var(--ios-blue); cursor: pointer; }
         
-        /* Bulk Action Bar */
+        .list-header { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: white; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; }
         .bulk-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; color: white; padding: 12px 25px; border-radius: 30px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 2000; font-size: 14px; font-weight: 600; }
     </style>
 </head>
@@ -85,9 +82,9 @@
 <div class="container">
     <div id="view-admin">
         <div class="tab-menu" id="admin-tabs">
-            <button class="active" onclick="switchAdminTab(1)">Scheduler</button>
-            <button onclick="switchAdminTab(2)">Clinics</button>
-            <button onclick="switchAdminTab(3)">Staff</button>
+            <button id="tab-btn-1" class="active" onclick="switchAdminTab(1)">Scheduler</button>
+            <button id="tab-btn-2" onclick="switchAdminTab(2)">Clinics</button>
+            <button id="tab-btn-3" onclick="switchAdminTab(3)">Staff</button>
         </div>
 
         <div id="adm-sec-1">
@@ -103,7 +100,6 @@
                 </div>
 
                 <div class="calendar-grid" id="adm-cal"></div>
-                
                 <div style="text-align:center; font-size:13px; color:var(--ios-blue); font-weight:600; margin-top:5px; min-height:18px;" id="selection-status">Select dates above</div>
                 <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
 
@@ -190,8 +186,20 @@
     let slots = []; let locations = []; let presets = []; let selectedPerks = [];
     let displayDate = new Date(); 
     let selectedDates = new Set(); 
-    let selectedSlots = new Set(); // For bulk actions
-    let allVisibleSlots = []; // To track what is currently shown for Select All
+    let selectedSlots = new Set(); 
+    let allVisibleSlots = []; 
+
+    // --- NAVIGATION LOGIC ---
+    window.switchAdminTab = (n) => {
+        // Toggle Sections
+        [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n));
+        
+        // Toggle Buttons (Highlight)
+        [1,2,3].forEach(i => {
+            const btn = document.getElementById('tab-btn-'+i);
+            btn.className = (i === n ? 'active' : '');
+        });
+    };
 
     // --- CALENDAR ---
     window.changeMonth = (offset) => {
@@ -203,7 +211,6 @@
         const root = document.getElementById('adm-cal'); root.innerHTML = '';
         const year = displayDate.getFullYear();
         const month = displayDate.getMonth();
-        
         document.getElementById('cal-month-title').innerText = displayDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
         const firstDayIdx = new Date(year, month, 1).getDay(); 
@@ -219,22 +226,9 @@
             const cell = document.createElement('div');
             cell.className = `date-cell ${hasSlot?'has-slot':''} ${isSel?'selected':''}`;
             cell.innerHTML = `<div class="num">${d}</div>`;
-            cell.onclick = () => {
-                // Single select behavior for filtering view
-                // Multi select behavior for publishing
-                // If just clicking to view, we clear others unless shift is held (not applicable on mobile)
-                // For this UI, clicking a date toggles it for PUBLISHING, but also Filters the list below.
-                
-                // If we want to view a specific date's slots, we should probably just have one "Active View Date".
-                // But the user requested multi-select for publishing.
-                
-                // Let's toggle selection for publishing
-                toggleDateSelection(dateStr);
-            };
+            cell.onclick = () => toggleDateSelection(dateStr);
             root.appendChild(cell);
         }
-        
-        // Update Master List based on selection
         renderMasterList();
     }
 
@@ -242,7 +236,7 @@
         if(selectedDates.has(dateStr)) selectedDates.delete(dateStr);
         else selectedDates.add(dateStr);
         renderCalendar();
-        renderMasterList(); // Filter list to show slots from selected dates
+        renderMasterList();
         document.getElementById('selection-status').innerText = selectedDates.size > 0 ? `${selectedDates.size} dates selected` : "Select dates above";
     };
 
@@ -275,31 +269,23 @@
         document.getElementById('selection-status').innerText = `${selectedDates.size} dates auto-selected`;
     };
 
-    // --- SELECT ALL LOGIC (NEW) ---
+    // --- SELECT ALL ---
     window.toggleSelectAll = () => {
         const masterCb = document.getElementById('select-all-cb');
-        const isChecked = masterCb.checked;
-        
-        if (isChecked) {
-            allVisibleSlots.forEach(s => selectedSlots.add(s.id));
-        } else {
-            // Only uncheck the visible ones, or clear all? 
-            // Usually clearing all is safer in this context to avoid confusion
-            selectedSlots.clear();
-        }
+        if (masterCb.checked) allVisibleSlots.forEach(s => selectedSlots.add(s.id));
+        else selectedSlots.clear();
         renderMasterList();
         updateBulkUI();
     };
 
     // --- PUBLISH ---
     window.publishBatch = async () => {
-        if(selectedDates.size === 0) return alert("Please select at least one date!");
+        if(selectedDates.size === 0) return alert("Select dates!");
         const loc = document.getElementById('adm-loc-dropdown').value;
         const r = document.getElementById('rate').value;
         const d = document.getElementById('duration').value;
         const t = document.getElementById('start-time').value;
         const custom = document.getElementById('custom-perks').value;
-        
         let finalPerks = [...selectedPerks];
         if(custom) finalPerks.push(custom);
 
@@ -329,11 +315,8 @@
     window.toggleSlotSelect = (id) => {
         if(selectedSlots.has(id)) selectedSlots.delete(id); else selectedSlots.add(id);
         updateBulkUI();
-        // Update "Select All" checkbox state
         const masterCb = document.getElementById('select-all-cb');
-        if(masterCb) {
-            masterCb.checked = allVisibleSlots.length > 0 && allVisibleSlots.every(s => selectedSlots.has(s.id));
-        }
+        if(masterCb) masterCb.checked = allVisibleSlots.length > 0 && allVisibleSlots.every(s => selectedSlots.has(s.id));
     };
     
     function updateBulkUI() {
@@ -360,43 +343,22 @@
     function renderMasterList() {
         const listHeader = document.getElementById('adm-master-list-header');
         const list = document.getElementById('adm-master-list');
-        
-        listHeader.innerHTML = '';
-        list.innerHTML = '';
+        listHeader.innerHTML = ''; list.innerHTML = '';
 
-        // Filter: If dates selected, show those. Else show all.
-        // Actually, usually easier to show ALL slots if no date selected, OR show slots for selected dates.
-        if(selectedDates.size > 0) {
-            allVisibleSlots = slots.filter(s => selectedDates.has(s.date));
-        } else {
-            allVisibleSlots = slots; // Show all if nothing selected
-        }
+        if(selectedDates.size > 0) allVisibleSlots = slots.filter(s => selectedDates.has(s.date));
+        else allVisibleSlots = slots;
 
-        if(allVisibleSlots.length === 0) {
-            list.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">No slots found.</div>';
-            return;
-        }
+        if(allVisibleSlots.length === 0) { list.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">No slots found.</div>'; return; }
 
-        // Render Select All Header
         const allSelected = allVisibleSlots.every(s => selectedSlots.has(s.id)) && allVisibleSlots.length > 0;
-        
-        listHeader.innerHTML = `
-            <div class="list-header">
-                <input type="checkbox" id="select-all-cb" class="slot-checkbox" onchange="toggleSelectAll()" ${allSelected ? 'checked' : ''}>
-                <span style="font-weight:600; font-size:13px;">Select All (${allVisibleSlots.length})</span>
-            </div>
-        `;
+        listHeader.innerHTML = `<div class="list-header"><input type="checkbox" id="select-all-cb" class="slot-checkbox" onchange="toggleSelectAll()" ${allSelected ? 'checked' : ''}><span style="font-weight:600;font-size:13px;">Select All (${allVisibleSlots.length})</span></div>`;
 
-        // Render Items
         allVisibleSlots.forEach(s => {
             const isChecked = selectedSlots.has(s.id) ? 'checked' : '';
             list.innerHTML += `<div class="card" style="display:flex; gap:15px; align-items:start;">
                 <input type="checkbox" class="slot-checkbox" onchange="toggleSlotSelect('${s.id}')" ${isChecked}>
                 <div style="flex-grow:1;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <b>${s.clinicName}</b>
-                        <b style="color:${s.status==='booked'?'red':'green'}">${s.status.toUpperCase()}</b>
-                    </div>
+                    <div style="display:flex; justify-content:space-between;"><b>${s.clinicName}</b><b style="color:${s.status==='booked'?'red':'green'}">${s.status.toUpperCase()}</b></div>
                     <div style="font-size:13px; margin:5px 0;">${s.date} (${s.dayName}) • ${s.startTime} • RM${s.payment}</div>
                 </div>
             </div>`;
@@ -407,9 +369,7 @@
     onSnapshot(collection(db, "shift_presets"), (snap) => {
         presets = snap.docs.map(d => ({id: d.id, ...d.data()}));
         const ui = document.getElementById('preset-list-ui'); ui.innerHTML = '';
-        presets.forEach(p => {
-            ui.innerHTML += `<div class="preset-pill" onclick="applyPreset('${p.id}')">⚡ ${p.name}</div>`;
-        });
+        presets.forEach(p => ui.innerHTML += `<div class="preset-pill" onclick="applyPreset('${p.id}')">⚡ ${p.name}</div>`);
     });
 
     window.applyPreset = (id) => {
@@ -458,7 +418,6 @@
     window.addLocation = async () => { const n = document.getElementById('new-clinic').value; if(n) await addDoc(collection(db, "locations"), {name:n}); };
     window.delLoc = async (id) => deleteDoc(doc(db, "locations", id));
     window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
-    window.switchAdminTab = (n) => { [1,2,3].forEach(i=>document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n)); };
 
 </script>
 </body>
