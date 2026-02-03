@@ -33,20 +33,20 @@
         .tab-menu button { flex: 1; border: none; padding: 8px; border-radius: 8px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        /* Elements */
+        /* Cards */
         .card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block; }
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; }
         .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; }
         .btn-primary { background: var(--ios-blue); color: white; }
+        .btn-checkin { background: var(--ios-green); color: white; padding: 8px 12px; font-size: 12px; border-radius: 8px; width: auto; }
         .hidden { display: none; }
-        .perk-badge { background: #F2F2F7; color: #5856D6; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <h2 style="font-size: 18px; letter-spacing: -0.5px;">AraLocum HQ</h2>
+    <h2 style="font-size: 18px; letter-spacing: -0.5px;">AraLocum</h2>
     <button onclick="location.reload()" style="background:none; border:none; color:var(--ios-blue); font-weight:600; cursor:pointer">Logout</button>
 </div>
 
@@ -54,9 +54,9 @@
     <div id="view-auth">
         <div class="card" style="margin-top: 40px; text-align:center;">
             <h3>Welcome</h3>
-            <div class="tab-menu">
+            <div class="tab-menu" id="role-selector">
                 <button class="active" onclick="setRole('dr')">Doctor</button>
-                <button onclick="setRole('staff')">Clinic Manager</button>
+                <button onclick="setRole('staff')">Manager</button>
             </div>
             <input type="text" id="loginPhone" placeholder="Mobile / Password">
             <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
@@ -79,21 +79,19 @@
         <div class="tab-menu">
             <button class="active" onclick="switchAdmin(1)">Schedule</button>
             <button onclick="switchAdmin(2)">Locations</button>
-            <button onclick="switchAdmin(3)">Verifications</button>
+            <button onclick="switchAdmin(3)">Doctors</button>
         </div>
 
         <div id="adm-1">
             <div class="card">
-                <span class="label">Step 1: Select Date</span>
+                <span class="label">Date Selector</span>
                 <div class="calendar-grid" id="cal-adm"></div>
                 <hr style="border:0.5px solid var(--ios-sep); margin:15px 0">
-                <span class="label">Step 2: Details</span>
                 <select id="sel-loc-adm"></select>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                     <input type="number" id="rate" placeholder="RM/hr">
                     <input type="number" id="hrs" placeholder="Hours">
                 </div>
-                <input type="text" id="perks" placeholder="Special Perks (Meals, etc)">
                 <button class="btn btn-primary" onclick="publishSlot()">Publish Slot</button>
             </div>
             <div id="adm-master-list"></div>
@@ -101,9 +99,9 @@
 
         <div id="adm-2" class="hidden">
             <div class="card">
-                <span class="label">Add New Clinic Location</span>
-                <input type="text" id="newLoc" placeholder="Clinic Name (e.g. Bangi)">
-                <button class="btn btn-primary" onclick="addLocation()">Save Location</button>
+                <span class="label">Add New Clinic</span>
+                <input type="text" id="newLocInput" placeholder="Clinic Name">
+                <button class="btn btn-primary" onclick="addNewLocation()">Add Clinic</button>
             </div>
             <div id="loc-list-ui"></div>
         </div>
@@ -134,59 +132,81 @@
     
     let locations = []; let slots = []; let selDate = null; let role = 'dr'; let user = null;
 
-    // --- FIX: LOCATION SYNC ---
+    // --- LOCATION LOGIC ---
     onSnapshot(collection(db, "locations"), (snap) => {
         locations = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        const ids = ['sel-loc-adm', 'sel-loc-dr', 'sel-loc-staff'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(!el) return;
-            el.innerHTML = (id === 'sel-loc-adm') ? '<option value="">Select Clinic</option>' : '<option value="All">All Locations</option>';
-            locations.forEach(l => el.innerHTML += `<option value="${l.name}">${l.name}</option>`);
+        refreshAllDropdowns();
+        renderLocationList();
+    });
+
+    function refreshAllDropdowns() {
+        const menus = [
+            { id: 'sel-loc-adm', default: 'Select Clinic' },
+            { id: 'sel-loc-dr', default: 'All Locations' },
+            { id: 'sel-loc-staff', default: 'All Locations' }
+        ];
+
+        menus.forEach(menu => {
+            const el = document.getElementById(menu.id);
+            if(el) {
+                el.innerHTML = `<option value="">${menu.default}</option>`;
+                locations.forEach(loc => {
+                    el.innerHTML += `<option value="${loc.name}">${loc.name}</option>`;
+                });
+            }
         });
-        const list = document.getElementById('loc-list-ui');
-        if(list) {
-            list.innerHTML = '';
-            locations.forEach(l => list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between"><span>${l.name}</span><button onclick="delLoc('${l.id}')" style="color:var(--ios-red); border:none; background:none">✕</button></div>`);
-        }
-    });
+    }
 
-    onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
-        slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderAllCals(); renderSlots(); renderRoster(); renderMaster();
-    });
-
-    // --- CORE LOGIC ---
-    window.addLocation = async () => {
-        const name = document.getElementById('newLoc').value;
-        if(name) await addDoc(collection(db, "locations"), { name });
-        document.getElementById('newLoc').value = '';
+    window.addNewLocation = async () => {
+        const name = document.getElementById('newLocInput').value.trim();
+        if(!name) return alert("Enter clinic name");
+        try {
+            await addDoc(collection(db, "locations"), { name: name });
+            document.getElementById('newLocInput').value = '';
+        } catch(e) { alert("Error adding location"); }
     };
 
+    function renderLocationList() {
+        const ui = document.getElementById('loc-list-ui');
+        if(!ui) return; ui.innerHTML = '';
+        locations.forEach(l => {
+            ui.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center">
+                <span>${l.name}</span>
+                <button onclick="delLoc('${l.id}')" style="color:var(--ios-red); border:none; background:none; font-weight:bold">✕</button>
+            </div>`;
+        });
+    }
+
+    // --- SYSTEM SYNC ---
+    onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
+        slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderAllCals(); renderSlots(); renderRoster(); renderAdminMaster();
+    });
+
+    // --- ACTIONS ---
     window.publishSlot = async () => {
         const loc = document.getElementById('sel-loc-adm').value;
         const r = document.getElementById('rate').value;
         const h = document.getElementById('hrs').value;
-        if(!loc || !selDate || !r) return alert("Fill all info");
-        await addDoc(collection(db, "slots"), { clinicName: loc, date: selDate, rate: r, hours: h, payment: r*h, perks: document.getElementById('perks').value, status: 'available' });
+        if(!loc || !selDate || !r) return alert("Missing info");
+        await addDoc(collection(db, "slots"), { clinicName: loc, date: selDate, rate: r, hours: h, payment: r*h, status: 'available', attendance: 'Absent' });
         alert("Published!");
     };
 
     window.handleLogin = async () => {
         const val = document.getElementById('loginPhone').value;
         if(role === 'staff') {
-            if(val === 'staff123') showView('staff'); else alert("Wrong Staff Password");
+            if(val === 'staff123') showView('staff'); else alert("Wrong Password");
         } else {
             const q = query(collection(db, "users"), where("phone", "==", val));
             const snap = await getDocs(q);
-            if(snap.empty) return alert("Phone not found");
+            if(snap.empty) return alert("Not registered");
             const u = snap.docs[0].data();
-            if(u.status !== 'verified') return alert("Pending Verification");
+            if(u.status !== 'verified') return alert("Verification pending");
             user = u; showView('dr');
         }
     };
 
-    // --- RENDERERS ---
     function renderAllCals() {
         ['cal-adm', 'cal-dr', 'cal-staff'].forEach(id => {
             const root = document.getElementById(id);
@@ -202,40 +222,35 @@
         });
     }
 
-    window.renderSlots = () => {
-        const list = document.getElementById('dr-list-ui');
-        const fil = document.getElementById('sel-loc-dr').value;
-        if(!list) return; list.innerHTML = '';
-        slots.filter(s => s.status==='available' && (fil==='All' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
-            list.innerHTML += `<div class="card"><b>${s.clinicName}</b> [RM${s.payment}]<br><button class="btn btn-primary" onclick="bookSlot('${s.id}')">Claim Shift</button></div>`;
-        });
-    };
-
     window.renderRoster = () => {
-        const list = document.getElementById('staff-list-ui');
+        const ui = document.getElementById('staff-list-ui');
         const fil = document.getElementById('sel-loc-staff').value;
-        if(!list) return; list.innerHTML = '';
-        slots.filter(s => s.status==='booked' && (fil==='All' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
-            list.innerHTML += `<div class="card"><b>Dr. ${s.bookedBy}</b><br><small>${s.clinicName} • ${s.date}</small></div>`;
+        if(!ui) return; ui.innerHTML = '';
+        slots.filter(s => s.status==='booked' && (fil==='' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
+            ui.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center">
+                <div><b>Dr. ${s.bookedBy}</b><br><small>${s.clinicName} • ${s.attendance || 'Absent'}</small></div>
+                <button class="btn-checkin" onclick="checkIn('${s.id}')">Check In</button>
+            </div>`;
         });
     };
 
-    window.bookSlot = async (id) => { await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: user.name }); alert("Booked!"); };
-    window.showView = (v) => {
-        if(v==='admin' && prompt("Pass?")!=='admin123') return;
-        document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById('view-'+v).classList.remove('hidden');
-        renderAllCals();
+    window.checkIn = async (id) => { await updateDoc(doc(db, "slots", id), { attendance: 'Arrived' }); alert("Doctor Checked In!"); };
+    window.renderSlots = () => {
+        const ui = document.getElementById('dr-list-ui');
+        const fil = document.getElementById('sel-loc-dr').value;
+        if(!ui) return; ui.innerHTML = '';
+        slots.filter(s => s.status==='available' && (fil==='' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
+            ui.innerHTML += `<div class="card"><b>${s.clinicName}</b> • RM${s.payment}<br><button class="btn btn-primary" style="margin-top:10px" onclick="bookSlot('${s.id}')">Claim</button></div>`;
+        });
     };
-    window.setRole = (r) => { 
-        role = r; 
-        document.querySelectorAll('.tab-menu button').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-    };
-    window.delLoc = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "locations", id)); };
+
+    window.bookSlot = async (id) => { await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: user.name }); alert("Confirmed!"); };
+    window.setRole = (r) => { role = r; document.querySelectorAll('#role-selector button').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); };
+    window.showView = (v) => { if(v==='admin' && prompt("Pass?")!=='admin123') return; document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); document.getElementById('view-'+v).classList.remove('hidden'); renderAllCals(); };
     window.switchAdmin = (n) => { [1,2,3].forEach(i=>document.getElementById('adm-'+i).classList.toggle('hidden', i!==n)); };
-    window.registerDr = async () => { await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, status: 'pending' }); alert("Submitted!"); location.reload(); };
-    function renderMaster() { /* Basic list */ }
+    window.delLoc = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "locations", id)); };
+    window.registerDr = async () => { await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, status: 'pending' }); alert("Success!"); location.reload(); };
+    function renderAdminMaster() {}
 </script>
 </body>
 </html>
