@@ -5,22 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AraLocum | Clinic Management</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --funrun: #e67e22; }
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --funrun: #e67e22; --admin: #e74c3c; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
         .nav { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); position: relative; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 8px solid var(--accent); position: relative; }
         .card.marathon { border-left-color: var(--primary); }
         .card.funrun { border-left-color: var(--funrun); }
-        .badge { position: absolute; top: 15px; right: 15px; padding: 4px 10px; borderRadius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .btn { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .badge { position: absolute; top: 15px; right: 15px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .btn { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 16px; }
         .btn-blue { background: var(--accent); color: white; }
         .btn-gray { background: #95a5a6; color: white; margin-left: 10px; }
-        .btn-claim { background: var(--success); color: white; width: 100%; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        .btn-claim { background: var(--success); color: white; width: 100%; margin-top: 15px; padding: 15px; font-size: 18px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2); }
+        .btn-claim:active { transform: scale(0.98); }
+        .btn-add { background: var(--admin); color: white; width: 100%; margin-top: 10px; }
+        .admin-box { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px dashed var(--admin); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; margin-top: 20px; font-size: 14px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f8f9fa; }
         .hidden { display: none; }
+        .clinic-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -28,20 +33,32 @@
     <div class="nav">
         <h2 style="margin:0">🏥 AraLocum</h2>
         <div>
-            <button class="btn btn-blue" onclick="showView('doctor')">Booking</button>
+            <button class="btn btn-blue" onclick="showView('doctor')">Book Slot</button>
             <button class="btn btn-gray" onclick="showView('admin')">Admin</button>
         </div>
     </div>
 
     <div class="container">
         <div id="doctor-view">
-            <h3>Available Shifts</h3>
-            <div id="slot-list">Connecting to AraLocum Database...</div>
+            <h3 style="margin-bottom:20px;">Available Shifts</h3>
+            <div id="slot-list">Connecting to database...</div>
         </div>
 
         <div id="admin-view" class="hidden">
+            <div class="admin-box">
+                <h3 style="margin-top:0; color:var(--admin)">➕ Add New Slots</h3>
+                <input type="text" id="newClinic" placeholder="Clinic Name (e.g. Ara Bangi)">
+                <input type="date" id="newDate">
+                <select id="newType">
+                    <option value="Long Marathon (8AM-8PM)">Long Marathon (8AM-8PM)</option>
+                    <option value="Long Marathon (8PM-8AM)">Long Marathon (8PM-8AM)</option>
+                    <option value="Fun Run (6PM-10PM)">Fun Run (6PM-10PM)</option>
+                </select>
+                <button class="btn btn-add" onclick="createSlot()">Publish Slot</button>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <h3>Sales Reports</h3>
+                <h3>Sales & Bookings</h3>
                 <h4 id="total-revenue">Total: RM 0.00</h4>
             </div>
             <table>
@@ -60,7 +77,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, query, where, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w",
@@ -74,75 +91,93 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // REAL-TIME DOCTOR VIEW
+        // CREATE SLOT
+        window.createSlot = async () => {
+            const clinic = document.getElementById('newClinic').value;
+            const date = document.getElementById('newDate').value;
+            const type = document.getElementById('newType').value;
+            if(!clinic || !date) return alert("Fill in all details!");
+
+            await addDoc(collection(db, "slots"), {
+                clinicName: clinic,
+                date: date,
+                slotType: type,
+                status: "available",
+                sales: 0,
+                createdAt: serverTimestamp()
+            });
+            alert("Slot Published!");
+            document.getElementById('newClinic').value = '';
+        };
+
+        // DOCTOR VIEW LISTENER
         onSnapshot(query(collection(db, "slots"), where("status", "==", "available")), (snapshot) => {
             const list = document.getElementById('slot-list');
             list.innerHTML = '';
-            if(snapshot.empty) list.innerHTML = '<p>No available slots for now. Check back later!</p>';
+            if(snapshot.empty) list.innerHTML = '<p>No slots currently available. Check back soon!</p>';
             
             snapshot.forEach(docSnap => {
                 const slot = docSnap.data();
-                const isMarathon = slot.slotType.toLowerCase().includes('marathon');
+                const isMarathon = slot.slotType.includes('Marathon');
                 list.innerHTML += `
                     <div class="card ${isMarathon ? 'marathon' : 'funrun'}">
-                        <span class="badge" style="background: ${isMarathon ? '#d1ecf1' : '#f8d7da'}">
-                            ${slot.slotType}
-                        </span>
-                        <h4 style="margin:0 0 10px 0">${slot.clinicName}</h4>
-                        <p style="margin:5px 0">📅 Date: <b>${slot.date}</b></p>
-                        <p style="margin:5px 0">⏰ Time: ${slot.startTime}</p>
-                        <button class="btn btn-claim" onclick="claimSlot('${docSnap.id}', '${slot.clinicName}')">Claim This Shift</button>
+                        <span class="badge" style="background: ${isMarathon ? '#d1ecf1' : '#ffeeba'}">${slot.slotType}</span>
+                        <div class="clinic-name">${slot.clinicName}</div>
+                        <div style="font-size: 18px;">📅 <b>${slot.date}</b></div>
+                        <button class="btn btn-claim" onclick="claimSlot('${docSnap.id}', '${slot.clinicName}', '${slot.date}')">CLAIM THIS SHIFT</button>
                     </div>`;
             });
         });
 
-        window.claimSlot = async (id, clinic) => {
-            const name = prompt(`Enter your Full Name to book ${clinic}:`);
-            if (name && name.trim().length > 2) {
-                await updateDoc(doc(db, "slots", id), { 
-                    status: "booked", 
-                    bookedBy: name,
-                    bookedAt: new Date().toISOString()
-                });
-                alert("Booking Confirmed! See you soon.");
+        window.claimSlot = async (id, clinic, date) => {
+            const confirmMsg = `Confirm booking for:\n📍 ${clinic}\n📅 ${date}\n\nProceed?`;
+            if (confirm(confirmMsg)) {
+                const name = prompt("Enter your Name to secure booking:");
+                if (name && name.trim().length > 2) {
+                    await updateDoc(doc(db, "slots", id), { status: "booked", bookedBy: name });
+                    alert("Success! Shift is yours.");
+                }
             }
         };
 
-        // REAL-TIME ADMIN VIEW
-        onSnapshot(query(collection(db, "slots"), where("status", "==", "booked")), (snapshot) => {
+        // ADMIN VIEW LISTENER
+        onSnapshot(collection(db, "slots"), (snapshot) => {
             const list = document.getElementById('admin-list');
             let total = 0;
             list.innerHTML = '';
             snapshot.forEach(docSnap => {
                 const slot = docSnap.data();
-                const sales = parseFloat(slot.sales || 0);
-                total += sales;
-                list.innerHTML += `
-                    <tr>
-                        <td><b>${slot.clinicName}</b><br><small>${slot.date}</small></td>
-                        <td>${slot.bookedBy}</td>
-                        <td>RM ${sales.toFixed(2)}</td>
-                        <td><button onclick="addSales('${docSnap.id}')">💰 Add Sales</button></td>
-                    </tr>`;
+                if(slot.status === 'booked') {
+                    const sales = parseFloat(slot.sales || 0);
+                    total += sales;
+                    list.innerHTML += `
+                        <tr>
+                            <td><b>${slot.clinicName}</b><br>${slot.date}</td>
+                            <td>${slot.bookedBy}</td>
+                            <td>RM ${sales.toFixed(2)}</td>
+                            <td>
+                                <button onclick="addSales('${docSnap.id}')" style="cursor:pointer">💰</button>
+                                <button onclick="deleteSlot('${docSnap.id}')" style="color:red; cursor:pointer">X</button>
+                            </td>
+                        </tr>`;
+                }
             });
             document.getElementById('total-revenue').innerText = `Total: RM ${total.toFixed(2)}`;
         });
 
         window.addSales = async (id) => {
-            const amount = prompt("Enter final sales amount for this shift (RM):");
-            if (amount !== null) {
-                await updateDoc(doc(db, "slots", id), { sales: amount });
-            }
+            const amount = prompt("Enter RM Sales Amount:");
+            if (amount !== null) await updateDoc(doc(db, "slots", id), { sales: amount });
         };
 
-        // NAVIGATION LOGIC
+        window.deleteSlot = async (id) => {
+            if(confirm("Permanently delete this record?")) await deleteDoc(doc(db, "slots", id));
+        };
+
         window.showView = (view) => {
             if (view === 'admin') {
-                const pass = prompt("Enter Admin Password:");
-                if (pass !== 'admin123') {
-                    alert("Unauthorized!");
-                    return;
-                }
+                const pass = prompt("Admin Password:");
+                if (pass !== 'admin123') return alert("Wrong password!");
             }
             document.getElementById('doctor-view').classList.toggle('hidden', view !== 'doctor');
             document.getElementById('admin-view').classList.toggle('hidden', view !== 'admin');
