@@ -17,7 +17,7 @@
 
         /* Card System */
         .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
         
         /* Inputs */
         input, select { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
@@ -26,43 +26,53 @@
         
         /* Buttons */
         .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; margin-top: 10px; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-primary { background: var(--ios-blue); color: white; }
         .btn-secondary { background: #E9E9EB; color: var(--ios-blue); font-size: 14px; margin-top: 8px; padding: 12px; }
+
+        /* CALENDAR 2.0 */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .cal-title { font-weight: 700; font-size: 17px; }
+        .cal-nav { background: #E9E9EB; border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--ios-blue); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        /* PRESET PILLS */
-        .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; min-height: 40px; align-items: center; }
-        .preset-container::-webkit-scrollbar { display: none; }
+        .day-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 10px; }
+        .day-head { font-size: 11px; color: #aaa; font-weight: 700; }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; row-gap: 8px; }
+        .date-cell { height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .date-cell .num { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 15px; transition: 0.1s; }
+        
+        /* Selection States */
+        .date-cell.selected .num { background: var(--ios-blue); color: white; font-weight: 600; box-shadow: 0 2px 5px rgba(0,122,255,0.3); }
+        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 2px; }
+        .date-cell.selected.has-slot::after { background: white; }
+
+        /* REPEAT UI (APPLE STYLE) */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 5px 0; }
+        .ios-toggle { position: relative; width: 50px; height: 30px; background: #e9e9eb; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .ios-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+        .ios-toggle.checked { background: var(--ios-green); }
+        .ios-toggle.checked::after { transform: translateX(20px); }
+
+        .weekday-picker { display: flex; justify-content: space-between; margin-top: 10px; background: #f8f8f8; padding: 10px; border-radius: 12px; }
+        .wk-day { width: 35px; height: 35px; border-radius: 50%; background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; color: #555; transition: 0.2s; }
+        .wk-day.active { background: var(--ios-blue); color: white; border-color: var(--ios-blue); }
+
+        /* Perks & Pills */
+        .preset-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
         .preset-pill { background: white; border: 1px solid var(--ios-blue); color: var(--ios-blue); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .preset-pill .del-btn { width: 20px; height: 20px; background: rgba(0,0,0,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-left: 5px; }
-
-        /* Calendar */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 10px; }
-        .date-cell { height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
-        .date-cell .num { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px; }
-        .date-cell.selected .num { background: var(--ios-blue); color: white; }
-        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 3px; }
-
-        /* Perks & Total */
         .perks-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
-        .perk-pill { background: #E9E9EB; color: var(--ios-label); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; user-select: none; }
+        .perk-pill { background: #E9E9EB; color: var(--ios-label); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .perk-pill.active { background: var(--ios-purple); color: white; }
-        .total-box { background: #E1F5E8; color: var(--ios-green); padding: 15px; border-radius: 12px; text-align: right; font-weight: 700; font-size: 18px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-
-        /* Replication UI */
-        .replication-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 12px; margin-top: 15px; }
-        .checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
-        
-        /* Bulk Actions */
-        .bulk-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 20px; border-radius: 30px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000; font-size: 14px; }
-        .bulk-btn { background: var(--ios-red); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
         .hidden { display: none; }
         .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
         .tab-menu button { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .slot-checkbox { width: 20px; height: 20px; accent-color: var(--ios-blue); }
         
-        /* List Checkbox */
-        .slot-checkbox { width: 20px; height: 20px; border-radius: 5px; cursor: pointer; accent-color: var(--ios-blue); }
+        /* Bulk Action Bar */
+        .bulk-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; color: white; padding: 12px 25px; border-radius: 30px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 2000; font-size: 14px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -75,68 +85,77 @@
 <div class="container">
     <div id="view-admin">
         <div class="tab-menu" id="admin-tabs">
-            <button class="active" onclick="switchAdminTab(1)">Slot Manager</button>
-            <button onclick="switchAdminTab(2)">Locations</button>
-            <button onclick="switchAdminTab(3)">Verifications</button>
+            <button class="active" onclick="switchAdminTab(1)">Scheduler</button>
+            <button onclick="switchAdminTab(2)">Clinics</button>
+            <button onclick="switchAdminTab(3)">Staff</button>
         </div>
 
         <div id="adm-sec-1">
             <div class="card">
-                <span class="label">1. Select Start Date</span>
-                <div class="calendar-grid" id="adm-cal"></div>
-                <div style="text-align:center; font-size:13px; color:var(--ios-blue); margin-bottom:15px; font-weight:600" id="day-display">Select a date</div>
-                <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
-
-                <span class="label">2. Quick Presets</span>
-                <div class="preset-container" id="preset-list-ui">
-                    <span style="font-size:12px; color:#999; padding:5px;">Loading...</span>
+                <div class="cal-header">
+                    <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+                    <div class="cal-title" id="cal-month-title">February 2026</div>
+                    <button class="cal-nav" onclick="changeMonth(1)">›</button>
+                </div>
+                
+                <div class="day-row">
+                    <div class="day-head">S</div><div class="day-head">M</div><div class="day-head">T</div><div class="day-head">W</div><div class="day-head">T</div><div class="day-head">F</div><div class="day-head">S</div>
                 </div>
 
-                <span class="label">3. Shift Details</span>
+                <div class="calendar-grid" id="adm-cal"></div>
+                
+                <div style="text-align:center; font-size:13px; color:var(--ios-blue); font-weight:600; margin-top:5px; min-height:18px;" id="selection-status">Select dates above</div>
+                <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
+
+                <div class="toggle-row">
+                    <span style="font-weight:600; font-size:15px">Repeat / Auto-Select</span>
+                    <div class="ios-toggle" id="repeat-switch" onclick="toggleRepeatUI()"></div>
+                </div>
+
+                <div id="repeat-options" class="hidden">
+                    <span class="label">Repeat every:</span>
+                    <div class="weekday-picker">
+                        <div class="wk-day" onclick="selectWeekday(0)">S</div>
+                        <div class="wk-day" onclick="selectWeekday(1)">M</div>
+                        <div class="wk-day" onclick="selectWeekday(2)">T</div>
+                        <div class="wk-day" onclick="selectWeekday(3)">W</div>
+                        <div class="wk-day" onclick="selectWeekday(4)">T</div>
+                        <div class="wk-day" onclick="selectWeekday(5)">F</div>
+                        <div class="wk-day" onclick="selectWeekday(6)">S</div>
+                    </div>
+                    <div style="font-size:11px; color:#666; margin-top:8px; text-align:center">Select a day to auto-fill for this month</div>
+                </div>
+                <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
+
+                <span class="label">Quick Presets</span>
+                <div class="preset-container" id="preset-list-ui"><small>Loading...</small></div>
+
+                <span class="label">Details</span>
                 <select id="adm-loc-dropdown"></select>
                 
                 <div class="row">
-                    <div><span class="label">Start Time</span><input type="time" id="start-time"></div>
-                    <div><span class="label">Duration (Hrs)</span><input type="number" id="duration" placeholder="e.g. 12" oninput="calcTotal()"></div>
+                    <div><span class="label">Start</span><input type="time" id="start-time"></div>
+                    <div><span class="label">Hours</span><input type="number" id="duration" placeholder="12" oninput="calcTotal()"></div>
                 </div>
                 <div class="row">
-                    <div><span class="label">Rate/Hour (RM)</span><input type="number" id="rate" placeholder="e.g. 80" oninput="calcTotal()"></div>
-                </div>
-
-                <div class="total-box">
-                    <span style="font-size:12px;color:#1e5c30;text-transform:uppercase;">Payout</span>
-                    <span id="total-display">RM 0.00</span>
-                </div>
-
-                <span class="label">4. Perks</span>
-                <div class="perks-container">
-                    <div class="perk-pill" onclick="togglePerk(this)">Paid Rest</div>
-                    <div class="perk-pill" onclick="togglePerk(this)">Meal Provided</div>
-                    <div class="perk-pill" onclick="togglePerk(this)">Parking Provided</div>
-                    <div class="perk-pill" onclick="togglePerk(this)">Prayer Room</div>
-                    <div class="perk-pill" onclick="togglePerk(this)">Procedure Claim</div>
-                </div>
-                <input type="text" id="custom-perks" placeholder="+ Add other perks">
-
-                <div class="replication-box">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="repeat-toggle" onchange="toggleRepeatUI()"> 
-                        🔁 Repeat this Shift?
-                    </label>
-                    
-                    <div id="repeat-options" class="hidden" style="margin-top:10px;">
-                        <span class="label">Repeat Mode</span>
-                        <select id="repeat-mode">
-                            <option value="weekly">Same day for next 4 weeks</option>
-                            <option value="weekdays">Every Weekday (Mon-Fri) for 1 month</option>
-                            <option value="weekends">Every Weekend (Sat-Sun) for 1 month</option>
-                            <option value="daily">Every Day for 1 week</option>
-                        </select>
+                    <div><span class="label">Rate (RM)</span><input type="number" id="rate" placeholder="80" oninput="calcTotal()"></div>
+                    <div style="text-align:right; align-self:center;">
+                        <span class="label">Total</span>
+                        <div style="color:var(--ios-green); font-weight:700; font-size:16px" id="total-display">RM 0</div>
                     </div>
                 </div>
 
-                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save as New Preset</button>
-                <button class="btn btn-primary" onclick="publishSlot()">Publish Slot(s)</button>
+                <span class="label">Perks</span>
+                <div class="perks-container">
+                    <div class="perk-pill" onclick="togglePerk(this)">Paid Rest</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Meal</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Parking</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Prayer Room</div>
+                </div>
+                <input type="text" id="custom-perks" placeholder="+ Add Perks">
+
+                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save Preset</button>
+                <button class="btn btn-primary" onclick="publishBatch()">Publish Slot(s)</button>
             </div>
 
             <div id="adm-master-list"></div>
@@ -144,22 +163,19 @@
 
         <div id="adm-sec-2" class="hidden">
             <div class="card">
-                <span class="label">New Clinic</span>
-                <input type="text" id="new-clinic" placeholder="Clinic Name">
-                <button class="btn btn-primary" onclick="addLocation()">Save Location</button>
+                <input type="text" id="new-clinic" placeholder="New Clinic Name">
+                <button class="btn btn-primary" onclick="addLocation()">Add Location</button>
             </div>
             <div id="loc-list"></div>
         </div>
 
-        <div id="adm-sec-3" class="hidden">
-            <div id="verify-list"></div>
-        </div>
+        <div id="adm-sec-3" class="hidden"><div id="verify-list"></div></div>
     </div>
 
     <div id="bulk-bar" class="bulk-bar hidden">
         <span id="bulk-count">0 Selected</span>
-        <button class="bulk-btn" onclick="bulkDelete()">Delete Selected</button>
-        <button class="bulk-btn" style="background:#555" onclick="clearSelection()">Cancel</button>
+        <button style="background:none; border:none; color:#ff6b6b; font-weight:700; cursor:pointer" onclick="bulkDelete()">DELETE</button>
+        <button style="background:none; border:none; color:#ddd; cursor:pointer" onclick="clearSelection()">✕</button>
     </div>
 </div>
 
@@ -171,223 +187,201 @@
     const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
     // STATE
-    let slots = []; let locations = []; let presets = []; let selectedDate = null; let selectedPerks = [];
-    let selectedSlots = new Set(); // For bulk actions
-    let displayDate = new Date();
+    let slots = []; let locations = []; let presets = []; let selectedPerks = [];
+    let displayDate = new Date(); // Current viewing month
+    let selectedDates = new Set(); // Multi-select Set
+    let selectedSlots = new Set(); // Bulk delete Set
 
-    // --- REPLICATION LOGIC ---
-    window.toggleRepeatUI = () => {
-        const isChecked = document.getElementById('repeat-toggle').checked;
-        document.getElementById('repeat-options').classList.toggle('hidden', !isChecked);
+    // --- CALENDAR ENGINE ---
+    window.changeMonth = (offset) => {
+        displayDate.setMonth(displayDate.getMonth() + offset);
+        renderCalendar();
     };
 
-    window.publishSlot = async () => {
-        const loc = document.getElementById('adm-loc-dropdown').value;
-        const time = document.getElementById('start-time').value;
-        const r = document.getElementById('rate').value;
-        const d = document.getElementById('duration').value;
-        const custom = document.getElementById('custom-perks').value;
-        const isRepeat = document.getElementById('repeat-toggle').checked;
-        const repeatMode = document.getElementById('repeat-mode').value;
+    function renderCalendar() {
+        const root = document.getElementById('adm-cal'); root.innerHTML = '';
+        const year = displayDate.getFullYear();
+        const month = displayDate.getMonth();
+        
+        document.getElementById('cal-month-title').innerText = displayDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-        let finalPerks = [...selectedPerks];
-        if(custom && !finalPerks.includes(custom)) finalPerks.push(custom);
+        const firstDayIdx = new Date(year, month, 1).getDay(); 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        if(!loc || !selectedDate || !r || !d) return alert("Fill required fields");
+        // Empty slots
+        for(let i=0; i<firstDayIdx; i++) root.appendChild(document.createElement('div'));
 
-        const batch = writeBatch(db);
-        const datesToPublish = [];
+        // Days
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const hasSlot = slots.some(s => s.date === dateStr);
+            const isSel = selectedDates.has(dateStr);
 
-        // 1. Always add the selected date first
-        datesToPublish.push(selectedDate);
+            const cell = document.createElement('div');
+            cell.className = `date-cell ${hasSlot?'has-slot':''} ${isSel?'selected':''}`;
+            cell.innerHTML = `<div class="num">${d}</div>`;
+            cell.onclick = () => toggleDateSelection(dateStr);
+            root.appendChild(cell);
+        }
+    }
 
-        // 2. Generate future dates if Repeat is ON
-        if(isRepeat) {
-            const start = new Date(selectedDate);
-            if(repeatMode === 'weekly') {
-                for(let i=1; i<=4; i++) { // Next 4 weeks
-                    const next = new Date(start);
-                    next.setDate(start.getDate() + (i * 7));
-                    datesToPublish.push(next.toISOString().split('T')[0]);
-                }
-            } else if (repeatMode === 'daily') {
-                for(let i=1; i<=6; i++) { // Next 6 days
-                    const next = new Date(start);
-                    next.setDate(start.getDate() + i);
-                    datesToPublish.push(next.toISOString().split('T')[0]);
-                }
-            } else if (repeatMode === 'weekdays') {
-                let count = 0; let dayOffset = 1;
-                while(count < 20) { // Approx 1 month of weekdays
-                    const next = new Date(start);
-                    next.setDate(start.getDate() + dayOffset);
-                    const day = next.getDay();
-                    if(day !== 0 && day !== 6) { // Skip Sun(0) and Sat(6)
-                        datesToPublish.push(next.toISOString().split('T')[0]);
-                        count++;
-                    }
-                    dayOffset++;
-                }
+    window.toggleDateSelection = (dateStr) => {
+        if(selectedDates.has(dateStr)) selectedDates.delete(dateStr);
+        else selectedDates.add(dateStr);
+        
+        // Update UI
+        renderCalendar();
+        document.getElementById('selection-status').innerText = selectedDates.size > 0 ? `${selectedDates.size} dates selected` : "Select dates above";
+    };
+
+    // --- REPEAT LOGIC ---
+    window.toggleRepeatUI = () => {
+        const sw = document.getElementById('repeat-switch');
+        const opts = document.getElementById('repeat-options');
+        sw.classList.toggle('checked');
+        opts.classList.toggle('hidden');
+    };
+
+    window.selectWeekday = (dayIdx) => {
+        // Toggle UI
+        const days = document.querySelectorAll('.wk-day');
+        days[dayIdx].classList.toggle('active');
+
+        // Auto-select dates in current month view
+        const year = displayDate.getFullYear();
+        const month = displayDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateObj = new Date(year, month, d);
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            
+            if(dateObj.getDay() === dayIdx) {
+                if(days[dayIdx].classList.contains('active')) selectedDates.add(dateStr);
+                else selectedDates.delete(dateStr);
             }
         }
+        renderCalendar();
+        document.getElementById('selection-status').innerText = `${selectedDates.size} dates auto-selected`;
+    };
 
-        // 3. Batch Create
-        datesToPublish.forEach(dateStr => {
+    // --- PUBLISH ---
+    window.publishBatch = async () => {
+        if(selectedDates.size === 0) return alert("Please select at least one date!");
+        
+        const loc = document.getElementById('adm-loc-dropdown').value;
+        const r = document.getElementById('rate').value;
+        const d = document.getElementById('duration').value;
+        const t = document.getElementById('start-time').value;
+        const custom = document.getElementById('custom-perks').value;
+        
+        let finalPerks = [...selectedPerks];
+        if(custom) finalPerks.push(custom);
+
+        if(!loc || !r || !d) return alert("Fill details!");
+
+        const batch = writeBatch(db);
+        selectedDates.forEach(dateStr => {
             const ref = doc(collection(db, "slots"));
             batch.set(ref, {
                 clinicName: loc, date: dateStr, 
                 dayName: new Date(dateStr).toLocaleDateString('en-US', {weekday:'long'}),
-                startTime: time, duration: d, ratePerHour: r, 
+                startTime: t, duration: d, ratePerHour: r, 
                 payment: (r*d).toFixed(2), perks: finalPerks, 
                 status: 'available', createdAt: new Date()
             });
         });
 
         await batch.commit();
-        alert(`Successfully published ${datesToPublish.length} slots!`);
-        document.getElementById('repeat-toggle').checked = false; // Reset toggle
-        toggleRepeatUI();
+        alert(`Published ${selectedDates.size} slots!`);
+        selectedDates.clear();
+        renderCalendar();
+        document.getElementById('selection-status').innerText = "Select dates above";
     };
 
-    // --- BULK DELETE LOGIC ---
-    window.toggleSelection = (id) => {
-        if(selectedSlots.has(id)) selectedSlots.delete(id);
-        else selectedSlots.add(id);
-        updateBulkUI();
-    };
-
-    function updateBulkUI() {
-        const bar = document.getElementById('bulk-bar');
-        const count = document.getElementById('bulk-count');
-        if(selectedSlots.size > 0) {
-            bar.classList.remove('hidden');
-            count.innerText = `${selectedSlots.size} Selected`;
-        } else {
-            bar.classList.add('hidden');
-        }
-    }
-
-    window.bulkDelete = async () => {
-        if(!confirm(`Delete ${selectedSlots.size} slots permanently?`)) return;
-        const batch = writeBatch(db);
-        selectedSlots.forEach(id => {
-            batch.delete(doc(db, "slots", id));
-        });
-        await batch.commit();
-        clearSelection();
-    };
-
-    window.clearSelection = () => {
-        selectedSlots.clear();
-        document.querySelectorAll('.slot-checkbox').forEach(cb => cb.checked = false);
-        updateBulkUI();
-    };
-
-    // --- RENDERERS ---
-    function renderMasterList() {
-        const list = document.getElementById('adm-master-list'); list.innerHTML = '';
-        let filtered = slots;
-        if(selectedDate) filtered = slots.filter(s => s.date === selectedDate);
-        
-        filtered.forEach(s => {
-            const isChecked = selectedSlots.has(s.id) ? 'checked' : '';
-            list.innerHTML += `<div class="card" style="display:flex; gap:15px; align-items:start;">
-                <input type="checkbox" class="slot-checkbox" onchange="toggleSelection('${s.id}')" ${isChecked}>
-                <div style="flex-grow:1;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <b>${s.clinicName}</b>
-                        <b style="color:${s.status==='booked'?'red':'green'}">${s.status.toUpperCase()}</b>
-                    </div>
-                    <div style="font-size:13px; margin:5px 0;">${s.date} (${s.dayName}) • ${s.startTime} • RM${s.payment}</div>
-                </div>
-            </div>`;
-        });
-    }
-
-    // --- EXISTING LOGIC (PRESETS, CALENDAR, ETC) ---
+    // --- PRESETS & DATA ---
     onSnapshot(collection(db, "shift_presets"), (snap) => {
         presets = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderPresets();
+        const ui = document.getElementById('preset-list-ui'); ui.innerHTML = '';
+        presets.forEach(p => {
+            ui.innerHTML += `<div class="preset-pill" onclick="applyPreset('${p.id}')">⚡ ${p.name}</div>`;
+        });
     });
 
-    function renderPresets() {
-        const ui = document.getElementById('preset-list-ui'); ui.innerHTML = '';
-        if(presets.length === 0) { ui.innerHTML = '<span style="font-size:12px;color:#999;padding:5px;">No presets.</span>'; return; }
-        presets.forEach(p => {
-            const pill = document.createElement('div');
-            pill.className = 'preset-pill';
-            pill.innerHTML = `⚡ ${p.name} <div class="del-btn" onclick="deletePreset('${p.id}', event)">✕</div>`;
-            pill.onclick = (e) => { if(e.target.className!=='del-btn') applyPreset(p); };
-            ui.appendChild(pill);
-        });
-    }
-
-    window.saveAsPreset = async () => {
-        const name = prompt("Name this preset:"); if(!name) return;
-        let finalPerks = [...selectedPerks];
-        const custom = document.getElementById('custom-perks').value;
-        if(custom && !finalPerks.includes(custom)) finalPerks.push(custom);
-        await addDoc(collection(db, "shift_presets"), {
-            name: name, startTime: document.getElementById('start-time').value,
-            duration: document.getElementById('duration').value,
-            rate: document.getElementById('rate').value, perks: finalPerks
-        });
-    };
-
-    function applyPreset(p) {
+    window.applyPreset = (id) => {
+        const p = presets.find(x => x.id === id);
         document.getElementById('start-time').value = p.startTime;
         document.getElementById('duration').value = p.duration;
         document.getElementById('rate').value = p.rate;
         selectedPerks = p.perks || [];
         document.querySelectorAll('.perk-pill').forEach(el => el.classList.toggle('active', selectedPerks.includes(el.innerText)));
-        calcTotal();
-    }
-    window.deletePreset = async (id, e) => { e.stopPropagation(); if(confirm("Delete?")) await deleteDoc(doc(db, "shift_presets", id)); };
+        window.calcTotal();
+    };
 
-    // --- CALENDAR ---
+    window.saveAsPreset = async () => {
+        const name = prompt("Preset Name:"); if(!name) return;
+        await addDoc(collection(db, "shift_presets"), {
+            name, startTime: document.getElementById('start-time').value,
+            duration: document.getElementById('duration').value,
+            rate: document.getElementById('rate').value, perks: selectedPerks
+        });
+    };
+
+    // --- BULK DELETE ---
+    window.toggleSlotSelect = (id) => {
+        if(selectedSlots.has(id)) selectedSlots.delete(id); else selectedSlots.add(id);
+        const bar = document.getElementById('bulk-bar');
+        bar.classList.toggle('hidden', selectedSlots.size === 0);
+        document.getElementById('bulk-count').innerText = `${selectedSlots.size} Selected`;
+    };
+    
+    window.bulkDelete = async () => {
+        if(!confirm("Delete selected?")) return;
+        const batch = writeBatch(db);
+        selectedSlots.forEach(id => batch.delete(doc(db, "slots", id)));
+        await batch.commit();
+        window.clearSelection();
+    };
+    
+    window.clearSelection = () => {
+        selectedSlots.clear();
+        document.querySelectorAll('.slot-checkbox').forEach(c => c.checked = false);
+        document.getElementById('bulk-bar').classList.add('hidden');
+    };
+
+    // --- INITIALIZERS & HELPERS ---
     onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
         slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderCalendar(); renderMasterList();
+        renderCalendar();
+        
+        // Render Master List
+        const list = document.getElementById('adm-master-list'); list.innerHTML = '';
+        slots.forEach(s => {
+            list.innerHTML += `<div class="card" style="display:flex;gap:10px;">
+                <input type="checkbox" class="slot-checkbox" onchange="toggleSlotSelect('${s.id}')">
+                <div style="flex:1">
+                    <div style="display:flex;justify-content:space-between"><b>${s.clinicName}</b><span>${s.date}</span></div>
+                    <small>RM${s.payment} • ${s.status}</small>
+                </div>
+            </div>`;
+        });
     });
 
-    function renderCalendar() {
-        const root = document.getElementById('adm-cal'); root.innerHTML = '';
-        for(let d=1; d<=28; d++) {
-            const ds = `2026-02-${d.toString().padStart(2, '0')}`;
-            const cell = document.createElement('div');
-            cell.className = `date-cell ${slots.some(s=>s.date===ds)?'has-slot':''} ${selectedDate===ds?'selected':''}`;
-            cell.innerHTML = `<div class="num">${d}</div>`;
-            cell.onclick = () => { selectedDate = ds; updateDayDisplay(ds); renderCalendar(); renderMasterList(); };
-            root.appendChild(cell);
-        }
-    }
-
-    // --- HELPERS ---
     onSnapshot(collection(db, "locations"), (snap) => {
         locations = snap.docs.map(d => ({id: d.id, ...d.data()}));
         const sel = document.getElementById('adm-loc-dropdown'); sel.innerHTML = '<option value="">Select Clinic</option>';
         const list = document.getElementById('loc-list'); list.innerHTML = '';
         locations.forEach(l => {
             sel.innerHTML += `<option value="${l.name}">${l.name}</option>`;
-            list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between"><span>${l.name}</span><button style="color:red;border:none;background:none" onclick="delLoc('${l.id}')">✕</button></div>`;
-        });
-    });
-    
-    // Auth & Verify Logic kept from previous context...
-    onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
-        const list = document.getElementById('verify-list'); list.innerHTML = '';
-        snap.forEach(d => {
-            const u = d.data(); list.innerHTML += `<div class="card">Dr. ${u.name}<button class="btn btn-primary" style="margin-top:10px" onclick="verify('${d.id}')">Approve</button></div>`;
+            list.innerHTML += `<div class="card">${l.name} <button onclick="delLoc('${l.id}')">Del</button></div>`;
         });
     });
 
     window.togglePerk = (el) => { el.classList.toggle('active'); const t=el.innerText; selectedPerks.includes(t)?selectedPerks=selectedPerks.filter(p=>p!==t):selectedPerks.push(t); };
     window.calcTotal = () => { const r=document.getElementById('rate').value; const d=document.getElementById('duration').value; document.getElementById('total-display').innerText=`RM ${(r*d).toFixed(2)}`; };
-    window.updateDayDisplay = (dStr) => { document.getElementById('day-display').innerText = new Date(dStr).toLocaleDateString('en-US', { weekday: 'long', month:'long', day:'numeric' }); };
-    window.addLocation = async () => { const n = document.getElementById('new-clinic').value; if(n) await addDoc(collection(db, "locations"), {name:n}); document.getElementById('new-clinic').value = ''; };
-    window.delLoc = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "locations", id)); };
-    window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
-    window.switchAdminTab = (n) => { [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n)); document.querySelectorAll('#admin-tabs button').forEach((b,i) => b.classList.toggle('active', i+1===n)); };
+    window.addLocation = async () => { const n = document.getElementById('new-clinic').value; if(n) await addDoc(collection(db, "locations"), {name:n}); };
+    window.delLoc = async (id) => deleteDoc(doc(db, "locations", id));
+    window.switchAdminTab = (n) => { [1,2,3].forEach(i=>document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n)); };
 
 </script>
 </body>
