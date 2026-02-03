@@ -3,114 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AraLocum Pro</title>
+    <title>AraLocum HQ</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
         :root {
             --ios-bg: #F2F2F7; --ios-card: #FFFFFF; --ios-blue: #007AFF;
             --ios-green: #34C759; --ios-red: #FF3B30; --ios-label: #8E8E93;
-            --ios-sep: rgba(0,0,0,0.1);
+            --ios-purple: #5856D6; --ios-sep: rgba(0,0,0,0.1);
         }
-        body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; background: var(--ios-bg); color: #000; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ios-bg); color: #000; -webkit-font-smoothing: antialiased; }
         .nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; padding: 15px 20px; border-bottom: 0.5px solid var(--ios-sep); display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 480px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
 
-        /* Apple Design Elements */
-        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 0.5px solid var(--ios-sep); }
-        .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
-        .tab-menu button { flex: 1; border: none; padding: 8px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; }
-        .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        /* Card System */
+        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; display: block; }
         
-        input, select { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; outline: none; }
-        .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
-        .btn:active { opacity: 0.7; transform: scale(0.98); }
+        /* Inputs */
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
+        input:focus { background: #e0e0e0; }
+        
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; margin-top: 10px; }
         .btn-primary { background: var(--ios-blue); color: white; }
-        .btn-checkin { background: var(--ios-green); color: white; padding: 8px 12px; font-size: 12px; width: auto; border-radius: 10px; }
         
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+        /* Perks System */
+        .perks-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
+        .perk-pill { background: #E9E9EB; color: var(--ios-label); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; user-select: none; }
+        .perk-pill.active { background: var(--ios-purple); color: white; }
+
+        /* Calendar */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 10px; }
         .date-cell { height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
-        .date-cell .num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px; }
+        .date-cell .num { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 14px; }
         .date-cell.selected .num { background: var(--ios-blue); color: white; }
-        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 4px; }
-        
-        .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 3px; }
+
+        /* Tabs */
+        .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
+        .tab-menu button { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
+        .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .hidden { display: none; }
+
+        /* Total Display */
+        .total-box { background: #E1F5E8; color: var(--ios-green); padding: 15px; border-radius: 12px; text-align: right; font-weight: 700; font-size: 18px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .total-label { font-size: 12px; color: #1e5c30; font-weight: 500; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <h2 style="font-size: 18px; letter-spacing: -0.5px;">AraLocum</h2>
-    <button onclick="location.reload()" style="background:none; border:none; color:var(--ios-blue); font-weight:600; cursor:pointer">Logout</button>
+    <h2 style="font-size: 18px; margin:0;">AraLocum HQ</h2>
+    <button onclick="location.reload()" style="background:none; border:none; color:var(--ios-blue); font-weight:600;">Logout</button>
 </div>
 
 <div class="container">
-    <div id="view-auth">
-        <div class="card" style="margin-top: 40px; text-align:center;">
-            <h3>Welcome</h3>
-            <div class="tab-menu" id="role-selector">
-                <button class="active" onclick="setRole('dr')">Doctor</button>
-                <button onclick="setRole('staff')">Clinic Staff</button>
-            </div>
-            <input type="text" id="loginPhone" placeholder="Mobile / Password">
-            <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
-            <button class="btn" style="background:none; color:var(--ios-blue); font-size:14px; margin-top:10px;" onclick="showView('register')">New Registration</button>
+    <div id="view-admin">
+        <div class="tab-menu" id="admin-tabs">
+            <button class="active" onclick="switchAdminTab(1)">Slot Manager</button>
+            <button onclick="switchAdminTab(2)">Locations</button>
+            <button onclick="switchAdminTab(3)">Verifications</button>
         </div>
-        <center><small style="color:var(--ios-label); cursor:pointer;" onclick="showView('admin')">Admin Console</small></center>
-    </div>
 
-    <div id="view-register" class="hidden">
-        <h3>Join AraLocum</h3>
-        <div class="card">
-            <input type="text" id="regName" placeholder="Full Name">
-            <input type="text" id="regPhone" placeholder="WhatsApp Number">
-            <input type="text" id="regMMC" placeholder="MMC Number">
-            <button class="btn btn-primary" onclick="registerDr()">Submit Profile</button>
-        </div>
-    </div>
-
-    <div id="view-admin" class="hidden">
-        <div class="tab-menu">
-            <button id="ab1" class="active" onclick="switchAdmin(1)">Schedule</button>
-            <button id="ab2" onclick="switchAdmin(2)">Locations</button>
-            <button id="ab3" onclick="switchAdmin(3)">Verifications</button>
-        </div>
-        
-        <div id="adm-1">
+        <div id="adm-sec-1">
             <div class="card">
                 <span class="label">1. Select Date</span>
-                <div class="calendar-grid" id="cal-adm"></div>
+                <div class="calendar-grid" id="adm-cal"></div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#F2F2F7; padding:10px; border-radius:10px; margin-bottom:15px;">
+                    <span style="font-size:13px; color:var(--ios-label)">Selected:</span>
+                    <strong id="day-display" style="color:var(--ios-blue)">Tap a date above</strong>
+                </div>
+
                 <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
-                <select id="sel-loc-adm"></select>
-                <input type="number" id="rate" placeholder="Payment Amount (RM)">
+
+                <span class="label">2. Shift Details</span>
+                <select id="adm-loc-dropdown"></select>
+                
+                <div class="row">
+                    <div>
+                        <span class="label">Start Time</span>
+                        <input type="time" id="start-time">
+                    </div>
+                    <div>
+                        <span class="label">Duration (Hrs)</span>
+                        <input type="number" id="duration" placeholder="e.g. 12" oninput="calcTotal()">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <span class="label">Rate / Hour (RM)</span>
+                        <input type="number" id="rate" placeholder="e.g. 80" oninput="calcTotal()">
+                    </div>
+                </div>
+
+                <div class="total-box">
+                    <span class="total-label">Est. Total Payout</span>
+                    <span id="total-display">RM 0.00</span>
+                </div>
+
+                <span class="label">3. Perks & Benefits</span>
+                <div class="perks-container">
+                    <div class="perk-pill" onclick="togglePerk(this)">Paid Rest</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Meal Provided</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Parking Provided</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Prayer Room</div>
+                    <div class="perk-pill" onclick="togglePerk(this)">Procedure Claim</div>
+                </div>
+                <input type="text" id="custom-perks" placeholder="+ Add other perks (optional)">
+
                 <button class="btn btn-primary" onclick="publishSlot()">Publish Slot</button>
             </div>
+
             <div id="adm-master-list"></div>
         </div>
 
-        <div id="adm-2" class="hidden">
+        <div id="adm-sec-2" class="hidden">
             <div class="card">
-                <span class="label">Add New Clinic</span>
-                <input type="text" id="newLocInput" placeholder="Clinic Name (e.g. Bangi)">
-                <button class="btn btn-primary" onclick="addNewLocation()">Save Location</button>
+                <span class="label">New Clinic</span>
+                <input type="text" id="new-clinic" placeholder="Clinic Name">
+                <button class="btn btn-primary" onclick="addLocation()">Save Location</button>
             </div>
-            <div id="loc-list-ui"></div>
+            <div id="loc-list"></div>
         </div>
 
-        <div id="adm-3" class="hidden"><div id="verify-list-ui"></div></div>
-    </div>
-
-    <div id="view-dr" class="hidden">
-        <div class="calendar-card"><div class="calendar-grid" id="cal-dr"></div></div>
-        <select id="sel-loc-dr" onchange="renderSlots()"></select>
-        <div id="dr-list-ui"></div>
-    </div>
-
-    <div id="view-staff" class="hidden">
-        <h3>Branch Roster</h3>
-        <select id="sel-loc-staff" onchange="renderRoster()"></select>
-        <div class="calendar-card"><div class="calendar-grid" id="cal-staff"></div></div>
-        <div id="staff-list-ui"></div>
+        <div id="adm-sec-3" class="hidden">
+            <div id="verify-list"></div>
+        </div>
     </div>
 </div>
 
@@ -118,121 +138,166 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, query, where, getDocs, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w", authDomain: "aralocum.firebaseapp.com", projectId: "aralocum", storageBucket: "aralocum.firebasestorage.app", appId: "1:665619614983:web:e3b4b50524c2730cf609a2" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app);
-    
-    let locations = []; let slots = []; let selDate = null; let role = 'dr'; let user = null;
+    const firebaseConfig = { 
+        apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w", 
+        authDomain: "aralocum.firebaseapp.com", 
+        projectId: "aralocum", 
+        storageBucket: "aralocum.firebasestorage.app", 
+        appId: "1:665619614983:web:e3b4b50524c2730cf609a2" 
+    };
+    const app = initializeApp(firebaseConfig); 
+    const db = getFirestore(app);
 
-    // LOCATION LISTENER (FIXED)
+    let slots = [];
+    let locations = [];
+    let selectedDate = null;
+    let selectedPerks = [];
+
+    // --- LOGIC: PERKS & CALCULATION ---
+    window.togglePerk = (el) => {
+        el.classList.toggle('active');
+        const text = el.innerText;
+        if(selectedPerks.includes(text)) {
+            selectedPerks = selectedPerks.filter(p => p !== text);
+        } else {
+            selectedPerks.push(text);
+        }
+    };
+
+    window.calcTotal = () => {
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        const duration = parseFloat(document.getElementById('duration').value) || 0;
+        const total = rate * duration;
+        document.getElementById('total-display').innerText = `RM ${total.toFixed(2)}`;
+    };
+
+    window.updateDayDisplay = (dateStr) => {
+        const date = new Date(dateStr);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('day-display').innerText = date.toLocaleDateString('en-US', options);
+    };
+
+    // --- CORE: PUBLISH SLOT ---
+    window.publishSlot = async () => {
+        const loc = document.getElementById('adm-loc-dropdown').value;
+        const time = document.getElementById('start-time').value;
+        const rate = document.getElementById('rate').value;
+        const duration = document.getElementById('duration').value;
+        const customPerkText = document.getElementById('custom-perks').value;
+
+        // Combine pill perks + custom text
+        let finalPerks = [...selectedPerks];
+        if(customPerkText) finalPerks.push(customPerkText);
+
+        if(!loc || !selectedDate || !rate || !duration) return alert("Please fill all required fields.");
+
+        // Auto-calculate Total
+        const totalAmount = (parseFloat(rate) * parseFloat(duration)).toFixed(2);
+
+        await addDoc(collection(db, "slots"), {
+            clinicName: loc,
+            date: selectedDate,
+            dayName: new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }),
+            startTime: time,
+            duration: duration,
+            ratePerHour: rate,
+            payment: totalAmount, // Total stored here
+            perks: finalPerks, // Array of strings
+            status: 'available',
+            createdAt: new Date()
+        });
+        
+        alert("Slot Published Successfully!");
+        // Reset form (optional)
+        selectedPerks = [];
+        document.querySelectorAll('.perk-pill').forEach(p => p.classList.remove('active'));
+        document.getElementById('custom-perks').value = '';
+    };
+
+    // --- DATA SYNC ---
     onSnapshot(collection(db, "locations"), (snap) => {
         locations = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        ['sel-loc-adm', 'sel-loc-dr', 'sel-loc-staff'].forEach(id => {
-            const el = document.getElementById(id);
-            if(!el) return;
-            el.innerHTML = (id === 'sel-loc-adm') ? '<option value="">Select Clinic</option>' : '<option value="All">All Locations</option>';
-            locations.forEach(l => el.innerHTML += `<option value="${l.name}">${l.name}</option>`);
+        const sel = document.getElementById('adm-loc-dropdown');
+        sel.innerHTML = '<option value="">Select Clinic</option>';
+        const list = document.getElementById('loc-list');
+        list.innerHTML = '';
+
+        locations.forEach(l => {
+            sel.innerHTML += `<option value="${l.name}">${l.name}</option>`;
+            list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between"><span>${l.name}</span><button style="color:red;border:none;background:none" onclick="delLoc('${l.id}')">✕</button></div>`;
         });
-        const list = document.getElementById('loc-list-ui');
-        if(list) {
-            list.innerHTML = '';
-            locations.forEach(l => list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><span>${l.name}</span><button onclick="delLoc('${l.id}')" style="color:var(--ios-red); border:none; background:none; font-weight:700;">✕</button></div>`);
-        }
     });
 
-    // SLOTS LISTENER
     onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
         slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderAllCals(); renderSlots(); renderRoster(); renderAdminMaster();
+        renderCalendar();
+        renderMasterList();
     });
 
-    // FUNCTIONS
-    window.addNewLocation = async () => {
-        const name = document.getElementById('newLocInput').value.trim();
-        if(name) {
-            await addDoc(collection(db, "locations"), { name });
-            document.getElementById('newLocInput').value = '';
+    onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+        const list = document.getElementById('verify-list');
+        list.innerHTML = snap.empty ? '<center><small>No pending items</small></center>' : '';
+        snap.forEach(d => {
+            const u = d.data();
+            list.innerHTML += `<div class="card">Dr. ${u.name}<br><small>MMC: ${u.mmc}</small><button class="btn btn-primary" style="margin-top:10px" onclick="verify('${d.id}')">Approve</button></div>`;
+        });
+    });
+
+    // --- RENDERERS ---
+    function renderCalendar() {
+        const root = document.getElementById('adm-cal');
+        root.innerHTML = '';
+        for(let d=1; d<=28; d++) {
+            const ds = `2026-02-${d.toString().padStart(2, '0')}`;
+            const cell = document.createElement('div');
+            cell.className = `date-cell ${slots.some(s=>s.date===ds)?'has-slot':''} ${selectedDate===ds?'selected':''}`;
+            cell.innerHTML = `<div class="num">${d}</div>`;
+            cell.onclick = () => { selectedDate = ds; updateDayDisplay(ds); renderCalendar(); renderMasterList(); };
+            root.appendChild(cell);
         }
-    };
+    }
 
-    window.publishSlot = async () => {
-        const loc = document.getElementById('sel-loc-adm').value;
-        const p = document.getElementById('rate').value;
-        if(!loc || !selDate || !p) return alert("Please fill all details and select a date on calendar.");
-        await addDoc(collection(db, "slots"), { clinicName: loc, date: selDate, payment: p, status: 'available', attendance: 'Pending' });
-        alert("Published!");
-    };
-
-    window.handleLogin = async () => {
-        const val = document.getElementById('loginPhone').value;
-        if(role === 'staff') {
-            if(val === 'staff123') showView('staff');
-            else alert("Invalid Staff Password");
-        } else {
-            const q = query(collection(db, "users"), where("phone", "==", val));
-            const snap = await getDocs(q);
-            if(snap.empty) return alert("Phone not registered.");
-            const u = snap.docs[0].data();
-            if(u.status !== 'verified') return alert("Verification Pending.");
-            user = u; showView('dr');
-        }
-    };
-
-    function renderAllCals() {
-        ['cal-adm', 'cal-dr', 'cal-staff'].forEach(id => {
-            const root = document.getElementById(id);
-            if(!root) return; root.innerHTML = '';
-            for(let d=1; d<=28; d++) {
-                const ds = `2026-02-${d.toString().padStart(2, '0')}`;
-                const cell = document.createElement('div');
-                cell.className = `date-cell ${slots.some(s=>s.date===ds && s.status==='available')?'has-slot':''} ${selDate===ds?'selected':''}`;
-                cell.innerHTML = `<div class="num">${d}</div>`;
-                cell.onclick = () => { selDate = ds; renderAllCals(); renderSlots(); renderRoster(); };
-                root.appendChild(cell);
-            }
+    function renderMasterList() {
+        const list = document.getElementById('adm-master-list');
+        list.innerHTML = '';
+        let filtered = slots;
+        if(selectedDate) filtered = slots.filter(s => s.date === selectedDate);
+        
+        filtered.forEach(s => {
+            // Join perks array into a string for display
+            const perkStr = Array.isArray(s.perks) ? s.perks.join(" • ") : s.perks;
+            
+            list.innerHTML += `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>${s.clinicName}</b>
+                        <span style="font-size:12px; font-weight:bold; color:${s.status==='booked'?'var(--ios-red)':'var(--ios-green)'}">${s.status.toUpperCase()}</span>
+                    </div>
+                    <div style="font-size:13px; color:#555; margin:5px 0;">
+                        📅 ${s.date} (${s.dayName || '-'})<br>
+                        ⏰ ${s.startTime || '?'} (${s.duration} hrs)<br>
+                        💰 RM${s.ratePerHour}/hr = <b>RM${s.payment}</b>
+                    </div>
+                    ${perkStr ? `<div style="font-size:11px; color:var(--ios-purple); background:#F2F2F7; padding:4px; border-radius:4px; margin-top:5px;">🎁 ${perkStr}</div>` : ''}
+                    <button onclick="delSlot('${s.id}')" style="color:var(--ios-red); border:none; background:none; margin-top:10px; font-size:12px; cursor:pointer;">Remove Slot</button>
+                </div>`;
         });
     }
 
-    window.renderSlots = () => {
-        const ui = document.getElementById('dr-list-ui');
-        const fil = document.getElementById('sel-loc-dr').value;
-        if(!ui) return; ui.innerHTML = '';
-        slots.filter(s => s.status==='available' && (fil==='All' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
-            ui.innerHTML += `<div class="card"><b>${s.clinicName}</b><br>RM${s.payment}<br><button class="btn btn-primary" style="margin-top:10px" onclick="bookSlot('${s.id}')">Claim Shift</button></div>`;
-        });
+    // --- HELPERS ---
+    window.addLocation = async () => {
+        const n = document.getElementById('new-clinic').value;
+        if(n) await addDoc(collection(db, "locations"), {name:n});
+        document.getElementById('new-clinic').value = '';
     };
-
-    window.renderRoster = () => {
-        const ui = document.getElementById('staff-list-ui');
-        const fil = document.getElementById('sel-loc-staff').value;
-        if(!ui) return; ui.innerHTML = '';
-        slots.filter(s => s.status==='booked' && (fil==='All' || s.clinicName===fil) && (!selDate || s.date===selDate)).forEach(s => {
-            ui.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div><b>Dr. ${s.bookedBy}</b><br><small>${s.attendance || 'Absent'}</small></div>
-                <button class="btn-checkin" onclick="checkIn('${s.id}')">Check In</button>
-            </div>`;
-        });
-    };
-
-    window.checkIn = async (id) => { await updateDoc(doc(db, "slots", id), { attendance: 'Arrived' }); alert("Doctor Checked In!"); };
-    window.bookSlot = async (id) => { await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: user.name }); alert("Booked!"); };
-    
-    window.setRole = (r) => { role = r; document.querySelectorAll('#role-selector button').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); };
-    
-    window.showView = (v) => {
-        if(v==='admin' && prompt("Pass?")!=='admin123') return;
-        document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById('view-'+v).classList.remove('hidden');
-        renderAllCals();
-    };
-
-    window.switchAdmin = (n) => { 
-        [1,2,3].forEach(i => document.getElementById('adm-'+i).classList.toggle('hidden', i!==n)); 
-        document.querySelectorAll('#view-admin .tab-menu button').forEach((b, i) => b.className = (i+1 === n ? 'active' : ''));
-    };
-
     window.delLoc = async (id) => { if(confirm("Delete Location?")) await deleteDoc(doc(db, "locations", id)); };
-    window.registerDr = async () => { await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, status: 'pending' }); alert("Success!"); location.reload(); };
-    function renderAdminMaster() { /* Summary in tab 1 */ }
+    window.delSlot = async (id) => { if(confirm("Delete Slot?")) await deleteDoc(doc(db, "slots", id)); };
+    window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
+    window.switchAdminTab = (n) => { 
+        [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n));
+        document.querySelectorAll('#admin-tabs button').forEach((b,i) => b.classList.toggle('active', i+1===n));
+    };
+
 </script>
 </body>
 </html>
