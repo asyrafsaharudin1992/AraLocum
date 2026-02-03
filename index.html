@@ -3,72 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AraLocum | Apple Edition</title>
+    <title>AraLocum Enterprise</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
         :root {
             --ios-bg: #F2F2F7;
             --ios-card: #FFFFFF;
             --ios-blue: #007AFF;
+            --ios-green: #34C759;
             --ios-red: #FF3B30;
             --ios-label: #8E8E93;
             --ios-sep: rgba(0,0,0,0.1);
+            --ios-purple: #5856D6;
         }
 
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--ios-bg); color: #000; -webkit-font-smoothing: antialiased; }
-        .nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); sticky; top: 0; z-index: 1000; padding: 15px 20px; border-bottom: 0.5px solid var(--ios-sep); display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 450px; margin: 0 auto; padding: 15px; }
+        body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; background: var(--ios-bg); color: #000; -webkit-font-smoothing: antialiased; }
+        .nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; padding: 15px 20px; border-bottom: 0.5px solid var(--ios-sep); display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
 
-        /* Apple Calendar UI */
+        /* Shared Calendar UI */
         .calendar-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 700; font-size: 17px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
-        .day-name { font-size: 11px; color: var(--ios-label); font-weight: 600; padding: 10px 0; cursor: pointer; }
-        .date-cell { height: 35px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; position: relative; margin: 2px 0; transition: 0.2s; }
-        
-        /* Small Circle Selector */
-        .date-cell .num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .date-cell { height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .date-cell .num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 15px; }
         .date-cell.selected .num { background: var(--ios-blue); color: white; }
-        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 0; }
-        .selected.has-slot::after { background: var(--ios-blue); }
+        .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 2px; }
 
-        /* Apple Tab Bar */
         .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 10px; margin-bottom: 20px; }
-        .tab-menu button { flex: 1; border: none; padding: 7px; border-radius: 8px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
+        .tab-menu button { flex: 1; border: none; padding: 8px; border-radius: 8px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        /* Cards & Lists */
-        .card { background: white; border-radius: 15px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .slot-item { border-bottom: 0.5px solid var(--ios-sep); padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
-        .slot-item:last-child { border: none; }
+        /* Card System */
+        .card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; display: block; }
         
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; background: #E9E9EB; font-size: 15px; box-sizing: border-box; }
-        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
-        .btn:active { opacity: 0.7; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 10px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+        .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
         .btn-primary { background: var(--ios-blue); color: white; }
+        
+        /* Doctor Specific UI */
+        .perk-pill { background: #F2F2F7; color: var(--ios-purple); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; display: inline-block; margin-top: 8px; }
+        .rate-tag { color: var(--ios-green); font-weight: 700; font-size: 18px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <h2 style="font-size: 18px; letter-spacing: -0.5px;">AraLocum</h2>
+    <h2 id="header-title" style="font-size: 18px; letter-spacing: -0.5px;">AraLocum</h2>
     <button onclick="location.reload()" style="background:none; border:none; color:var(--ios-blue); font-weight:600; cursor:pointer">Logout</button>
 </div>
 
 <div class="container">
     <div id="view-auth">
-        <div class="card" style="margin-top: 50px;">
-            <h3 style="margin-top:0">Doctor Portal</h3>
+        <div class="card" style="margin-top: 50px; text-align:center;">
+            <h3>Doctor Login</h3>
             <input type="text" id="loginPhone" placeholder="Mobile Number">
             <button class="btn btn-primary" onclick="loginDoctor()">Sign In</button>
-            <button class="btn" style="background:none; color:var(--ios-blue); font-size:14px" onclick="showView('register')">New Doctor Registration</button>
+            <button class="btn" style="background:none; color:var(--ios-blue); font-size:14px" onclick="showView('register')">New Registration</button>
         </div>
         <center><small style="color:var(--ios-label)" onclick="showView('admin')">Admin Console</small></center>
     </div>
 
     <div id="view-register" class="hidden">
-        <h3>Registration</h3>
+        <h3>Join AraLocum</h3>
         <div class="card">
             <input type="text" id="regName" placeholder="Full Name">
             <input type="text" id="regPhone" placeholder="WhatsApp Number">
@@ -77,48 +75,63 @@
         </div>
     </div>
 
-    <div id="view-main" class="hidden">
-        <div id="role-tabs" class="tab-menu">
-            <button id="tab-btn-1" class="active" onclick="toggleMainTab(1)">Schedule</button>
-            <button id="tab-btn-2" onclick="toggleMainTab(2)">Activity</button>
+    <div id="view-doctor" class="hidden">
+        <div class="tab-menu">
+            <button id="dt1" class="active" onclick="switchDrTab(1)">Available</button>
+            <button id="dt2" onclick="switchDrTab(2)">My Shifts</button>
         </div>
 
-        <div id="tab-content-1">
-            <div id="admin-add-card" class="card hidden">
-                <p style="margin:0 0 10px 0; font-size:12px; color:var(--ios-label)">Add slot for selected date:</p>
-                <input type="text" id="admClinic" placeholder="Clinic Name">
-                <input type="date" id="admDate">
-                <input type="number" id="admPay" placeholder="Payment Amount RM">
-                <button class="btn btn-primary" onclick="addSlot()">Publish Shift</button>
-            </div>
-
+        <div id="dr-content-1">
             <div class="calendar-card">
-                <div class="calendar-header">February 2026</div>
-                <div class="calendar-grid" id="cal-header">
-                    <div class="day-name" onclick="filterByDay(0)">S</div>
-                    <div class="day-name" onclick="filterByDay(1)">M</div>
-                    <div class="day-name" onclick="filterByDay(2)">T</div>
-                    <div class="day-name" onclick="filterByDay(3)">W</div>
-                    <div class="day-name" onclick="filterByDay(4)">T</div>
-                    <div class="day-name" onclick="filterByDay(5)">F</div>
-                    <div class="day-name" onclick="filterByDay(6)">S</div>
-                </div>
-                <div class="calendar-grid" id="cal-dates"></div>
+                <div class="calendar-grid" id="dr-cal-dates"></div>
             </div>
-
-            <select id="clinic-filter" onchange="renderSlotList()"><option value="All">All Clinics</option></select>
-            <div id="slot-list-ui"></div>
+            <select id="drClinicFilter" onchange="renderDoctorSlots()">
+                <option value="All">All Locations</option>
+            </select>
+            <div id="dr-available-list"></div>
         </div>
 
-        <div id="tab-content-2" class="hidden">
-            <div id="verify-section" class="hidden">
-                <h4 style="margin-bottom:10px">Verification Queue</h4>
-                <div id="pending-list"></div>
+        <div id="dr-content-2" class="hidden">
+            <div id="dr-history-list"></div>
+        </div>
+    </div>
+
+    <div id="view-admin" class="hidden">
+        <div class="tab-menu">
+            <button id="at1" class="active" onclick="switchAdminTab(1)">Schedule</button>
+            <button id="at2" onclick="switchAdminTab(2)">Clinics</button>
+            <button id="at3" onclick="switchAdminTab(3)">Verifications</button>
+        </div>
+
+        <div id="adm-content-1">
+            <div class="card">
+                <span class="label">1. Pick Date</span>
+                <div class="calendar-grid" id="adm-cal-dates"></div>
+                <hr style="border:0.5px solid var(--ios-sep); margin:15px 0">
+                <span class="label">2. Details</span>
+                <select id="admLocSelect"><option value="">Select Clinic</option></select>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                    <div><span class="label">RM / Hour</span><input type="number" id="admRate" placeholder="80" oninput="updateTotal()"></div>
+                    <div><span class="label">Total Hours</span><input type="number" id="admHours" placeholder="12" oninput="updateTotal()"></div>
+                </div>
+                <div style="text-align:right; font-weight:700; color:var(--ios-green); margin-bottom:10px" id="admTotal">Total: RM 0</div>
+                <span class="label">Perks</span>
+                <input type="text" id="admPerks" placeholder="e.g. Lunch, Parking">
+                <button class="btn btn-primary" onclick="publishSlot()">Publish Shift</button>
             </div>
-            <div id="dr-activity-section">
-                <h4 style="margin-bottom:10px">My Earnings</h4>
-                <div id="earning-list"></div>
+            <div id="adm-master-list"></div>
+        </div>
+
+        <div id="adm-content-2" class="hidden">
+            <div class="card">
+                <input type="text" id="newClinicName" placeholder="New Clinic Name">
+                <button class="btn btn-primary" onclick="addClinic()">Add Clinic</button>
             </div>
+            <div id="clinic-list-items"></div>
+        </div>
+
+        <div id="adm-content-3" class="hidden">
+            <div id="pending-dr-list"></div>
         </div>
     </div>
 </div>
@@ -130,143 +143,176 @@
     const firebaseConfig = { apiKey: "AIzaSyBiIJjmUGmBgm3oQQXMf35DezOetI3_T1w", authDomain: "aralocum.firebaseapp.com", projectId: "aralocum", storageBucket: "aralocum.firebasestorage.app", messagingSenderId: "665619614983", appId: "1:665619614983:web:e3b4b50524c2730cf609a2" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-    let allSlots = [];
-    let currentDr = null;
-    let isAdmin = false;
-    let selectedDate = null;
-    let selectedDayIndex = null;
+    let slots = []; let clinics = []; let currentDr = null; let selectedDate = null;
 
-    // --- CALENDAR RENDERER ---
-    function renderCalendar() {
-        const root = document.getElementById('cal-dates');
-        root.innerHTML = '';
-        const now = new Date(2026, 1, 1); // Feb 2026
-        const firstDay = now.getDay();
-        const totalDays = new Date(2026, 2, 0).getDate();
+    // DATA SYNC
+    onSnapshot(collection(db, "locations"), (snap) => {
+        clinics = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        const sel = document.getElementById('admLocSelect');
+        const fil = document.getElementById('drClinicFilter');
+        sel.innerHTML = '<option value="">Select Clinic</option>';
+        fil.innerHTML = '<option value="All">All Locations</option>';
+        clinics.forEach(c => {
+            sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            fil.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        });
+        renderClinics();
+    });
 
-        for (let i = 0; i < firstDay; i++) root.innerHTML += '<div></div>';
-        
-        for (let d = 1; d <= totalDays; d++) {
-            const dateStr = `2026-02-${d.toString().padStart(2, '0')}`;
-            const hasSlot = allSlots.some(s => s.date === dateStr && s.status === 'available');
-            const isSelected = selectedDate === dateStr;
-            
-            const cell = document.createElement('div');
-            cell.className = `date-cell ${hasSlot ? 'has-slot' : ''} ${isSelected ? 'selected' : ''}`;
-            cell.innerHTML = `<div class="num">${d}</div>`;
-            cell.onclick = () => { 
-                selectedDate = dateStr; 
-                selectedDayIndex = null;
-                if(isAdmin) document.getElementById('admDate').value = dateStr;
-                renderCalendar();
-                renderSlotList();
-            };
-            root.appendChild(cell);
-        }
-    }
+    onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
+        slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderCalendars();
+        renderDoctorSlots();
+        renderAdminMaster();
+        renderDrHistory();
+    });
 
-    // --- SLOTS LIST ---
-    function renderSlotList() {
-        const ui = document.getElementById('slot-list-ui');
-        const filter = document.getElementById('clinic-filter').value;
-        ui.innerHTML = '';
+    // FUNCTIONS
+    window.updateTotal = () => {
+        const r = document.getElementById('admRate').value || 0;
+        const h = document.getElementById('admHours').value || 0;
+        document.getElementById('admTotal').innerText = `Total: RM ${r * h}`;
+    };
 
-        let filtered = allSlots.filter(s => isAdmin ? true : s.status === 'available');
+    window.publishSlot = async () => {
+        const name = document.getElementById('admLocSelect').value;
+        const rate = document.getElementById('admRate').value;
+        const hours = document.getElementById('admHours').value;
+        if(!name || !selectedDate || !rate) return alert("Missing fields");
+        await addDoc(collection(db, "slots"), { 
+            clinicName: name, date: selectedDate, rate, hours, 
+            payment: rate * hours, perks: document.getElementById('admPerks').value, status: 'available' 
+        });
+        alert("Shift Live!");
+    };
 
-        if(filter !== 'All') filtered = filtered.filter(s => s.clinicName === filter);
-        if(selectedDate) filtered = filtered.filter(s => s.date === selectedDate);
-        if(selectedDayIndex !== null) filtered = filtered.filter(s => new Date(s.date).getDay() === selectedDayIndex);
-
-        if(filtered.length === 0) ui.innerHTML = '<p style="text-align:center; color:var(--ios-label); font-size:13px; margin-top:20px;">No shifts found for this selection.</p>';
-
-        filtered.forEach(s => {
-            ui.innerHTML += `
-                <div class="card">
-                    <div class="slot-item">
-                        <div>
-                            <b style="font-size:16px">${s.clinicName}</b><br>
-                            <small style="color:var(--ios-label)">${s.date} • RM${s.payment}</small>
-                        </div>
-                        ${isAdmin ? 
-                            `<button onclick="deleteSlot('${s.id}')" style="color:var(--ios-red); border:none; background:none; font-weight:600">Delete</button>` : 
-                            `<button onclick="bookSlot('${s.id}')" style="background:var(--ios-blue); color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:600">Claim</button>`
-                        }
-                    </div>
-                </div>`;
+    function renderCalendars() {
+        ['dr-cal-dates', 'adm-cal-dates'].forEach(id => {
+            const root = document.getElementById(id);
+            if(!root) return;
+            root.innerHTML = '';
+            for(let d=1; d<=28; d++) {
+                const dStr = `2026-02-${d.toString().padStart(2, '0')}`;
+                const hasSlot = slots.some(s => s.date === dStr && s.status === 'available');
+                const cell = document.createElement('div');
+                cell.className = `date-cell ${hasSlot?'has-slot':''} ${selectedDate===dStr?'selected':''}`;
+                cell.innerHTML = `<div class="num">${d}</div>`;
+                cell.onclick = () => { selectedDate = dStr; renderCalendars(); renderDoctorSlots(); };
+                root.appendChild(cell);
+            }
         });
     }
 
-    // --- ACTIONS ---
+    window.renderDoctorSlots = () => {
+        const list = document.getElementById('dr-available-list');
+        const filter = document.getElementById('drClinicFilter').value;
+        list.innerHTML = '';
+        let filtered = slots.filter(s => s.status === 'available');
+        if(filter !== 'All') filtered = filtered.filter(s => s.clinicName === filter);
+        if(selectedDate) filtered = filtered.filter(s => s.date === selectedDate);
+
+        filtered.forEach(s => {
+            list.innerHTML += `<div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:start">
+                    <div><b>${s.clinicName}</b><br><small style="color:var(--ios-label)">${s.date} • ${s.hours} Hours</small></div>
+                    <div class="rate-tag">RM${s.payment}</div>
+                </div>
+                ${s.perks ? `<div class="perk-pill">🎁 ${s.perks}</div>` : ''}
+                <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center">
+                    <small>RM${s.rate}/hr</small>
+                    <button class="btn btn-primary" style="width:auto; padding:8px 20px" onclick="bookSlot('${s.id}')">Claim</button>
+                </div>
+            </div>`;
+        });
+    };
+
+    window.bookSlot = async (id) => {
+        if(confirm("Confirm this booking?")) {
+            await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: currentDr.name, payStatus: 'Pending' });
+            alert("Confirmed!");
+        }
+    };
+
+    // AUTH & ADMIN
     window.loginDoctor = async () => {
         const p = document.getElementById('loginPhone').value;
         const q = query(collection(db, "users"), where("phone", "==", p));
         const snap = await getDocs(q);
-        if(snap.empty) return alert("Account not found.");
+        if(snap.empty) return alert("Not found");
         const user = snap.docs[0].data();
-        if(user.status !== 'verified') return alert("Application still pending approval.");
-        currentDr = user; isAdmin = false; showView('main');
+        if(user.status !== 'verified') return alert("Pending verification");
+        currentDr = user; showView('doctor');
     };
 
     window.registerDoctor = async () => {
         await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, mmc: document.getElementById('regMMC').value, status: 'pending' });
-        alert("Submitted! Wait for verification."); location.reload();
+        alert("Submitted!"); location.reload();
     };
 
-    window.addSlot = async () => {
-        const clinic = document.getElementById('admClinic').value;
-        const date = document.getElementById('admDate').value;
-        const pay = document.getElementById('admPay').value;
-        if(!clinic || !date) return alert("Fill all details");
-        await addDoc(collection(db, "slots"), { clinicName: clinic, date: date, payment: pay, status: 'available' });
-        alert("Shift Published");
-    };
-
-    window.bookSlot = async (id) => {
-        if(confirm("Claim this shift?")) {
-            await updateDoc(doc(db, "slots", id), { status: 'booked', bookedBy: currentDr.name, payStatus: 'Pending' });
-            alert("Shift Secured!");
-        }
-    };
-
-    window.deleteSlot = async (id) => { if(confirm("Remove?")) await deleteDoc(doc(doc(db, "slots", id))); };
-
-    window.filterByDay = (idx) => { selectedDayIndex = idx; selectedDate = null; renderCalendar(); renderSlotList(); };
-
-    // --- VIEW CONTROLLER ---
     window.showView = (v) => {
-        if(v === 'admin' && prompt("Pass?") !== 'admin123') return;
-        if(v === 'admin') { isAdmin = true; document.getElementById('admin-add-card').classList.remove('hidden'); document.getElementById('verify-section').classList.remove('hidden'); v = 'main'; }
-        
+        if(v === 'admin' && prompt("Code?") !== 'admin123') return;
         document.getElementById('view-auth').classList.add('hidden');
         document.getElementById('view-register').classList.add('hidden');
-        document.getElementById('view-main').classList.remove('hidden');
-        
-        onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
-            allSlots = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            renderCalendar(); renderSlotList();
+        document.getElementById('view-doctor').classList.toggle('hidden', v !== 'doctor');
+        document.getElementById('view-admin').classList.toggle('hidden', v !== 'admin');
+        renderCalendars();
+    };
+
+    window.switchDrTab = (n) => {
+        document.getElementById('dr-content-1').classList.toggle('hidden', n!==1);
+        document.getElementById('dr-content-2').classList.toggle('hidden', n!==2);
+        document.getElementById('dt1').className = n===1?'active':'';
+        document.getElementById('dt2').className = n===2?'active':'';
+    };
+
+    window.switchAdminTab = (n) => {
+        [1,2,3].forEach(i => {
+            document.getElementById(`adm-content-${i}`).classList.toggle('hidden', i!==n);
+            document.getElementById(`at${i}`).className = i===n?'active':'';
         });
-
-        if(isAdmin) {
-            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
-                const list = document.getElementById('pending-list');
-                list.innerHTML = '';
-                snap.forEach(d => {
-                    const u = d.data();
-                    list.innerHTML += `<div class="card" style="font-size:13px">Dr. ${u.name} (MMC: ${u.mmc})<br><button onclick="verifyDr('${d.id}')" style="color:var(--ios-blue); border:none; background:none; padding:0; font-weight:600; margin-top:5px">Approve Account</button></div>`;
-                });
-            });
-        }
     };
 
-    window.verifyDr = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
-
-    window.toggleMainTab = (n) => {
-        document.getElementById('tab-content-1').classList.toggle('hidden', n !== 1);
-        document.getElementById('tab-content-2').classList.toggle('hidden', n !== 2);
-        document.getElementById('tab-btn-1').className = n===1?'active':'';
-        document.getElementById('tab-btn-2').className = n===2?'active':'';
-        document.getElementById('tab-btn-2').innerText = isAdmin ? 'Verification' : 'Earnings';
+    window.addClinic = async () => {
+        const name = document.getElementById('newClinicName').value;
+        if(name) await addDoc(collection(db, "locations"), { name });
+        document.getElementById('newClinicName').value = '';
     };
+
+    function renderClinics() {
+        const list = document.getElementById('clinic-list-items');
+        list.innerHTML = '';
+        clinics.forEach(c => list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between"><span>${c.name}</span><button onclick="delLoc('${c.id}')" style="color:var(--ios-red); border:none; background:none">✕</button></div>`);
+    }
+
+    function renderAdminMaster() {
+        const list = document.getElementById('adm-master-list');
+        list.innerHTML = '';
+        slots.forEach(s => {
+            list.innerHTML += `<div class="card" style="border-left:4px solid ${s.status==='available'? 'var(--ios-green)':'var(--ios-red)'}">
+                <b>${s.clinicName}</b><br><small>${s.date} • ${s.status.toUpperCase()}</small>
+                <div style="margin-top:5px; font-size:12px">${s.bookedBy ? 'Dr: '+s.bookedBy : ''}</div>
+                <button onclick="delSlot('${s.id}')" style="color:var(--ios-red); background:none; border:none; margin-top:10px; padding:0; cursor:pointer">Remove</button>
+            </div>`;
+        });
+    }
+
+    function renderDrHistory() {
+        const list = document.getElementById('dr-history-list');
+        if(!currentDr) return;
+        list.innerHTML = '<h3>My Earnings</h3>';
+        slots.filter(s => s.bookedBy === currentDr.name).forEach(s => {
+            list.innerHTML += `<div class="card">
+                <b>${s.clinicName}</b><br><small>${s.date}</small>
+                <div style="display:flex; justify-content:space-between; margin-top:10px">
+                    <b>RM${s.payment}</b>
+                    <span style="color:var(--ios-green)">${s.payStatus || 'Confirmed'}</span>
+                </div>
+            </div>`;
+        });
+    }
+
+    window.delLoc = async (id) => { if(confirm("Delete Clinic?")) await deleteDoc(doc(db, "locations", id)); };
+    window.delSlot = async (id) => { if(confirm("Delete Slot?")) await deleteDoc(doc(db, "slots", id)); };
 </script>
 </body>
 </html>
