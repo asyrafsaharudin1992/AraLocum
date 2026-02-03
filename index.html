@@ -22,12 +22,25 @@
         /* Inputs */
         input, select { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; background: #E9E9EB; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
         input:focus { background: #e0e0e0; }
-        
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        /* Buttons */
         .btn { border: none; border-radius: 14px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; margin-top: 10px; }
         .btn-primary { background: var(--ios-blue); color: white; }
+        .btn-secondary { background: #E9E9EB; color: var(--ios-blue); font-size: 14px; margin-top: 5px; padding: 12px; }
         
-        /* Perks System */
+        /* PRESET CHIPS (NEW) */
+        .preset-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
+        .preset-chip { 
+            background: linear-gradient(135deg, #007AFF, #005ecb); color: white; 
+            padding: 8px 14px; border-radius: 18px; font-size: 12px; font-weight: 600; 
+            white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 4px rgba(0,122,255,0.2);
+        }
+        .preset-chip .del-btn { background: rgba(0,0,0,0.2); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .preset-chip:active { transform: scale(0.96); }
+
+        /* Perks */
         .perks-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
         .perk-pill { background: #E9E9EB; color: var(--ios-label); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; user-select: none; }
         .perk-pill.active { background: var(--ios-purple); color: white; }
@@ -39,15 +52,11 @@
         .date-cell.selected .num { background: var(--ios-blue); color: white; }
         .date-cell.has-slot::after { content: ''; width: 4px; height: 4px; background: var(--ios-blue); border-radius: 50%; position: absolute; bottom: 3px; }
 
-        /* Tabs */
         .tab-menu { display: flex; background: #E3E3E8; padding: 3px; border-radius: 12px; margin-bottom: 20px; }
         .tab-menu button { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; font-weight: 600; font-size: 13px; cursor: pointer; }
         .tab-menu button.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-
-        /* Total Display */
         .total-box { background: #E1F5E8; color: var(--ios-green); padding: 15px; border-radius: 12px; text-align: right; font-weight: 700; font-size: 18px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .total-label { font-size: 12px; color: #1e5c30; font-weight: 500; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -69,41 +78,30 @@
             <div class="card">
                 <span class="label">1. Select Date</span>
                 <div class="calendar-grid" id="adm-cal"></div>
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#F2F2F7; padding:10px; border-radius:10px; margin-bottom:15px;">
-                    <span style="font-size:13px; color:var(--ios-label)">Selected:</span>
-                    <strong id="day-display" style="color:var(--ios-blue)">Tap a date above</strong>
-                </div>
-
+                <div style="text-align:center; font-size:13px; color:var(--ios-blue); margin-bottom:15px; font-weight:600" id="day-display">Select a date</div>
                 <hr style="border:0; border-top:0.5px solid var(--ios-sep); margin:15px 0;">
 
-                <span class="label">2. Shift Details</span>
+                <span class="label">2. Quick Fill (Presets)</span>
+                <div class="preset-scroll" id="preset-list-ui">
+                    </div>
+
+                <span class="label">3. Shift Details</span>
                 <select id="adm-loc-dropdown"></select>
                 
                 <div class="row">
-                    <div>
-                        <span class="label">Start Time</span>
-                        <input type="time" id="start-time">
-                    </div>
-                    <div>
-                        <span class="label">Duration (Hrs)</span>
-                        <input type="number" id="duration" placeholder="e.g. 12" oninput="calcTotal()">
-                    </div>
+                    <div><span class="label">Start Time</span><input type="time" id="start-time"></div>
+                    <div><span class="label">Duration (Hrs)</span><input type="number" id="duration" placeholder="e.g. 12" oninput="calcTotal()"></div>
                 </div>
-
                 <div class="row">
-                    <div>
-                        <span class="label">Rate / Hour (RM)</span>
-                        <input type="number" id="rate" placeholder="e.g. 80" oninput="calcTotal()">
-                    </div>
+                    <div><span class="label">Rate/Hour (RM)</span><input type="number" id="rate" placeholder="e.g. 80" oninput="calcTotal()"></div>
                 </div>
 
                 <div class="total-box">
-                    <span class="total-label">Est. Total Payout</span>
+                    <span style="font-size:12px;color:#1e5c30;text-transform:uppercase;">Payout</span>
                     <span id="total-display">RM 0.00</span>
                 </div>
 
-                <span class="label">3. Perks & Benefits</span>
+                <span class="label">4. Perks</span>
                 <div class="perks-container">
                     <div class="perk-pill" onclick="togglePerk(this)">Paid Rest</div>
                     <div class="perk-pill" onclick="togglePerk(this)">Meal Provided</div>
@@ -111,9 +109,10 @@
                     <div class="perk-pill" onclick="togglePerk(this)">Prayer Room</div>
                     <div class="perk-pill" onclick="togglePerk(this)">Procedure Claim</div>
                 </div>
-                <input type="text" id="custom-perks" placeholder="+ Add other perks (optional)">
+                <input type="text" id="custom-perks" placeholder="+ Add other perks">
 
                 <button class="btn btn-primary" onclick="publishSlot()">Publish Slot</button>
+                <button class="btn btn-secondary" onclick="saveAsPreset()">+ Save Config as New Preset</button>
             </div>
 
             <div id="adm-master-list"></div>
@@ -150,78 +149,112 @@
 
     let slots = [];
     let locations = [];
+    let presets = [];
     let selectedDate = null;
     let selectedPerks = [];
 
-    // --- LOGIC: PERKS & CALCULATION ---
+    // --- PRESET LOGIC (NEW) ---
+    onSnapshot(collection(db, "shift_presets"), (snap) => {
+        presets = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderPresets();
+    });
+
+    function renderPresets() {
+        const ui = document.getElementById('preset-list-ui');
+        ui.innerHTML = '';
+        if(presets.length === 0) ui.innerHTML = '<span style="font-size:12px; color:#999; padding:5px;">No presets saved. Fill form & click Save below.</span>';
+        
+        presets.forEach(p => {
+            const chip = document.createElement('div');
+            chip.className = 'preset-chip';
+            chip.innerHTML = `${p.name} <span class="del-btn" onclick="deletePreset('${p.id}', event)">✕</span>`;
+            chip.onclick = (e) => { 
+                if(e.target.className === 'del-btn') return; // Don't trigger fill if deleting
+                applyPreset(p); 
+            };
+            ui.appendChild(chip);
+        });
+    }
+
+    window.saveAsPreset = async () => {
+        const name = prompt("Name this shift preset (e.g. Marathon Day):");
+        if(!name) return;
+        
+        const data = {
+            name: name,
+            startTime: document.getElementById('start-time').value,
+            duration: document.getElementById('duration').value,
+            rate: document.getElementById('rate').value,
+            perks: [...selectedPerks] // Save currently selected perks
+        };
+
+        if(!data.startTime || !data.duration || !data.rate) return alert("Fill form details first!");
+
+        await addDoc(collection(db, "shift_presets"), data);
+        alert("Preset Saved!");
+    };
+
+    window.deletePreset = async (id, e) => {
+        e.stopPropagation();
+        if(confirm("Delete this preset?")) await deleteDoc(doc(db, "shift_presets", id));
+    };
+
+    function applyPreset(p) {
+        document.getElementById('start-time').value = p.startTime;
+        document.getElementById('duration').value = p.duration;
+        document.getElementById('rate').value = p.rate;
+        
+        // Reset Perks
+        selectedPerks = p.perks || [];
+        document.querySelectorAll('.perk-pill').forEach(el => {
+            el.classList.toggle('active', selectedPerks.includes(el.innerText));
+        });
+
+        calcTotal(); // Recalculate money
+    }
+
+    // --- EXISTING LOGIC ---
     window.togglePerk = (el) => {
         el.classList.toggle('active');
         const text = el.innerText;
-        if(selectedPerks.includes(text)) {
-            selectedPerks = selectedPerks.filter(p => p !== text);
-        } else {
-            selectedPerks.push(text);
-        }
+        selectedPerks.includes(text) ? selectedPerks = selectedPerks.filter(p => p!==text) : selectedPerks.push(text);
     };
 
     window.calcTotal = () => {
         const rate = parseFloat(document.getElementById('rate').value) || 0;
-        const duration = parseFloat(document.getElementById('duration').value) || 0;
-        const total = rate * duration;
-        document.getElementById('total-display').innerText = `RM ${total.toFixed(2)}`;
+        const dur = parseFloat(document.getElementById('duration').value) || 0;
+        document.getElementById('total-display').innerText = `RM ${(rate*dur).toFixed(2)}`;
     };
 
-    window.updateDayDisplay = (dateStr) => {
-        const date = new Date(dateStr);
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('day-display').innerText = date.toLocaleDateString('en-US', options);
+    window.updateDayDisplay = (dStr) => {
+        document.getElementById('day-display').innerText = new Date(dStr).toLocaleDateString('en-US', { weekday: 'long', month:'long', day:'numeric' });
     };
 
-    // --- CORE: PUBLISH SLOT ---
     window.publishSlot = async () => {
         const loc = document.getElementById('adm-loc-dropdown').value;
         const time = document.getElementById('start-time').value;
-        const rate = document.getElementById('rate').value;
-        const duration = document.getElementById('duration').value;
-        const customPerkText = document.getElementById('custom-perks').value;
-
-        // Combine pill perks + custom text
+        const r = document.getElementById('rate').value;
+        const d = document.getElementById('duration').value;
+        const custom = document.getElementById('custom-perks').value;
         let finalPerks = [...selectedPerks];
-        if(customPerkText) finalPerks.push(customPerkText);
+        if(custom) finalPerks.push(custom);
 
-        if(!loc || !selectedDate || !rate || !duration) return alert("Please fill all required fields.");
-
-        // Auto-calculate Total
-        const totalAmount = (parseFloat(rate) * parseFloat(duration)).toFixed(2);
+        if(!loc || !selectedDate || !r || !d) return alert("Fill required fields");
 
         await addDoc(collection(db, "slots"), {
-            clinicName: loc,
-            date: selectedDate,
-            dayName: new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }),
-            startTime: time,
-            duration: duration,
-            ratePerHour: rate,
-            payment: totalAmount, // Total stored here
-            perks: finalPerks, // Array of strings
-            status: 'available',
-            createdAt: new Date()
+            clinicName: loc, date: selectedDate, dayName: new Date(selectedDate).toLocaleDateString('en-US', {weekday:'long'}),
+            startTime: time, duration: d, ratePerHour: r, payment: (r*d).toFixed(2), perks: finalPerks, status: 'available', createdAt: new Date()
         });
-        
-        alert("Slot Published Successfully!");
-        // Reset form (optional)
-        selectedPerks = [];
-        document.querySelectorAll('.perk-pill').forEach(p => p.classList.remove('active'));
-        document.getElementById('custom-perks').value = '';
+        alert("Published!");
     };
 
-    // --- DATA SYNC ---
+    // --- SYNC ---
     onSnapshot(collection(db, "locations"), (snap) => {
         locations = snap.docs.map(d => ({id: d.id, ...d.data()}));
         const sel = document.getElementById('adm-loc-dropdown');
         sel.innerHTML = '<option value="">Select Clinic</option>';
         const list = document.getElementById('loc-list');
         list.innerHTML = '';
-
         locations.forEach(l => {
             sel.innerHTML += `<option value="${l.name}">${l.name}</option>`;
             list.innerHTML += `<div class="card" style="display:flex; justify-content:space-between"><span>${l.name}</span><button style="color:red;border:none;background:none" onclick="delLoc('${l.id}')">✕</button></div>`;
@@ -230,23 +263,20 @@
 
     onSnapshot(query(collection(db, "slots"), orderBy("date", "asc")), (snap) => {
         slots = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderCalendar();
-        renderMasterList();
+        renderCalendar(); renderMasterList();
     });
 
     onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
         const list = document.getElementById('verify-list');
-        list.innerHTML = snap.empty ? '<center><small>No pending items</small></center>' : '';
+        list.innerHTML = snap.empty ? '<center><small>No pending apps</small></center>' : '';
         snap.forEach(d => {
             const u = d.data();
             list.innerHTML += `<div class="card">Dr. ${u.name}<br><small>MMC: ${u.mmc}</small><button class="btn btn-primary" style="margin-top:10px" onclick="verify('${d.id}')">Approve</button></div>`;
         });
     });
 
-    // --- RENDERERS ---
     function renderCalendar() {
-        const root = document.getElementById('adm-cal');
-        root.innerHTML = '';
+        const root = document.getElementById('adm-cal'); root.innerHTML = '';
         for(let d=1; d<=28; d++) {
             const ds = `2026-02-${d.toString().padStart(2, '0')}`;
             const cell = document.createElement('div');
@@ -258,46 +288,24 @@
     }
 
     function renderMasterList() {
-        const list = document.getElementById('adm-master-list');
-        list.innerHTML = '';
+        const list = document.getElementById('adm-master-list'); list.innerHTML = '';
         let filtered = slots;
         if(selectedDate) filtered = slots.filter(s => s.date === selectedDate);
-        
         filtered.forEach(s => {
-            // Join perks array into a string for display
-            const perkStr = Array.isArray(s.perks) ? s.perks.join(" • ") : s.perks;
-            
-            list.innerHTML += `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <b>${s.clinicName}</b>
-                        <span style="font-size:12px; font-weight:bold; color:${s.status==='booked'?'var(--ios-red)':'var(--ios-green)'}">${s.status.toUpperCase()}</span>
-                    </div>
-                    <div style="font-size:13px; color:#555; margin:5px 0;">
-                        📅 ${s.date} (${s.dayName || '-'})<br>
-                        ⏰ ${s.startTime || '?'} (${s.duration} hrs)<br>
-                        💰 RM${s.ratePerHour}/hr = <b>RM${s.payment}</b>
-                    </div>
-                    ${perkStr ? `<div style="font-size:11px; color:var(--ios-purple); background:#F2F2F7; padding:4px; border-radius:4px; margin-top:5px;">🎁 ${perkStr}</div>` : ''}
-                    <button onclick="delSlot('${s.id}')" style="color:var(--ios-red); border:none; background:none; margin-top:10px; font-size:12px; cursor:pointer;">Remove Slot</button>
-                </div>`;
+            list.innerHTML += `<div class="card">
+                <div style="display:flex; justify-content:space-between;"><b>${s.clinicName}</b><b style="color:${s.status==='booked'?'red':'green'}">${s.status.toUpperCase()}</b></div>
+                <div style="font-size:13px; margin:5px 0;">${s.date} • ${s.startTime} (${s.duration}h) • <b>RM${s.payment}</b></div>
+                ${s.perks ? `<div style="font-size:11px;color:#5856D6;background:#f2f2f7;padding:4px;display:inline-block;border-radius:4px;">🎁 ${Array.isArray(s.perks)?s.perks.join(', '):s.perks}</div>` : ''}
+                <button onclick="delSlot('${s.id}')" style="color:red;border:none;background:none;display:block;margin-top:10px;font-size:12px">Remove</button>
+            </div>`;
         });
     }
 
-    // --- HELPERS ---
-    window.addLocation = async () => {
-        const n = document.getElementById('new-clinic').value;
-        if(n) await addDoc(collection(db, "locations"), {name:n});
-        document.getElementById('new-clinic').value = '';
-    };
+    window.addLocation = async () => { const n = document.getElementById('new-clinic').value; if(n) await addDoc(collection(db, "locations"), {name:n}); document.getElementById('new-clinic').value = ''; };
     window.delLoc = async (id) => { if(confirm("Delete Location?")) await deleteDoc(doc(db, "locations", id)); };
     window.delSlot = async (id) => { if(confirm("Delete Slot?")) await deleteDoc(doc(db, "slots", id)); };
     window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
-    window.switchAdminTab = (n) => { 
-        [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n));
-        document.querySelectorAll('#admin-tabs button').forEach((b,i) => b.classList.toggle('active', i+1===n));
-    };
-
+    window.switchAdminTab = (n) => { [1,2,3].forEach(i => document.getElementById('adm-sec-'+i).classList.toggle('hidden', i!==n)); document.querySelectorAll('#admin-tabs button').forEach((b,i) => b.classList.toggle('active', i+1===n)); };
 </script>
 </body>
 </html>
