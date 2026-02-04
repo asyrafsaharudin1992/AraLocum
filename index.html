@@ -18,7 +18,6 @@
         /* Card System */
         .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); transition: 0.2s; }
         .card:active { transform: scale(0.99); }
-        
         .label { font-size: 11px; color: var(--ios-label); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
         .hidden { display: none; }
         
@@ -262,23 +261,23 @@
     // --- AUTH ---
     window.setRole = (r) => { userRole = r; document.querySelectorAll('#role-selector button').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); };
     window.handleLogin = async () => {
-        const val = document.getElementById('loginPhone').value;
+        const val = document.getElementById('loginPhone').value.trim(); // TRIM ADDED
         if(userRole === 'staff') { 
             if(val === 'staff123') { localStorage.setItem('araStaff', 'true'); showView('staff'); } 
             else alert("Wrong Pass"); 
         } else {
             const q = query(collection(db, "users"), where("phone", "==", val));
             const snap = await getDocs(q);
-            if(snap.empty) return alert("Not registered.");
+            if(snap.empty) return alert("Not registered. Check phone number.");
             const u = snap.docs[0].data();
-            if(u.status !== 'verified') return alert("Application pending.");
+            if(u.status !== 'verified') return alert("Application pending Admin approval.");
             currentUser = u; 
             localStorage.setItem('araUser', JSON.stringify(u));
             document.getElementById('app-title').innerText = `Dr. ${u.name}`;
             showView('dr');
         }
     };
-    window.registerDr = async () => { await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value, mmc: document.getElementById('regMMC').value, status: 'pending' }); alert("Application Sent!"); location.reload(); };
+    window.registerDr = async () => { await addDoc(collection(db, "users"), { name: document.getElementById('regName').value, phone: document.getElementById('regPhone').value.trim(), mmc: document.getElementById('regMMC').value, status: 'pending' }); alert("Application Sent!"); location.reload(); };
 
     // --- CALENDAR ENGINE ---
     window.changeMonth = (offset) => { displayDate.setMonth(displayDate.getMonth() + offset); renderCalendars(); };
@@ -287,7 +286,6 @@
         const activeView = document.querySelector('.container > div:not(.hidden)').id;
         const containerId = activeView === 'view-admin' ? 'adm-cal' : (activeView === 'view-dr' ? 'dr-cal' : 'staff-cal');
         const titleId = activeView === 'view-admin' ? 'cal-month-title' : 'dr-cal-month';
-        
         const root = document.getElementById(containerId); if(!root) return; root.innerHTML = '';
         
         const year = displayDate.getFullYear(); const month = displayDate.getMonth();
@@ -547,7 +545,6 @@
         });
     }
 
-    // Renaming & Verify
     window.verify = async (id) => { await updateDoc(doc(db, "users", id), { status: 'verified' }); };
     window.downloadICS = (summary, date, time, dur) => {
         const start = new Date(`${date}T${time}`);
@@ -557,7 +554,6 @@
         const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'shift.ics'; link.click();
     };
 
-    // View Routing
     window.showView = (v, bypass=false) => {
         if(v==='admin' && !bypass) { if(prompt("Pass?")!=='admin123') return; localStorage.setItem('araAdmin', 'true'); }
         document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
